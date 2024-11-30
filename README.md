@@ -1,8 +1,11 @@
 # DCI-Project
 Deep Convection Initiation Project
 
+**Figures**
+Some code used for plotting main figures for final paper.
 
 **Tracking Algorithms**
+
 _eulerian_CL_tracking.ipynb_
 Uses local max algorithm applied at each z-level applied across y-slices to find convergence line based on "convergence threshold". 
 This threshold is dependent on data and should be tested by the researcher.
