@@ -1,7 +1,7 @@
 # DCI-Project
 Deep Convection Initiation Project
 
-Copyright ©2024 Abraham Roseman & Torri Lab
+_Copyright ©2024 Abraham Roseman & Torri Lab_
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to use
@@ -11,6 +11,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 The Software may not be modified, reproduced, distributed, sublicensed, or used for
 commercial purposes without explicit prior written permission from the copyright holder. 
+The modification or reproduction is permitted for research purposes. 
 The copyright holder will continue to maintain all rights to the software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
