@@ -57,5 +57,8 @@ Combines plots from "eulerian_updrafts.ipynb" and "lagrangian_updrafts.ipynb" in
 _Entrainment Profiles.ipynb_
 Functions to calculate entrainment. Data is binned into vertical profiles and plotted for "general" and "cloudy updrafts".
 
+RESIDENCE.ipynb
+goal is to track dry air entrainment effects on cloudy updrafts, residence times, etc. currently in testing phase.
+
 **Cold_Pool_Tracking**
 ... to be continued ...
