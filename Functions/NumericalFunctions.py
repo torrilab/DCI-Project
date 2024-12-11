@@ -12,7 +12,7 @@
 # from NumericalFunctions import *
 
 
-# In[ ]:
+# In[8]:
 
 
 def Ddt(f,dt):
@@ -52,6 +52,19 @@ def Ddx(f,dx):
     _ddx[:, :, :, 0] = (f[:, :, :, 1] - f[:, :, :, 0]) / dx  # Forward difference 
     _ddx[:, :, :, -1] = (f[:, :, :, -1] - f[:, :, :, -2]) / dx  # Backward difference 
     return _ddx
+
+
+def DivergenceHoriz(f,dx,dy):
+    out=Ddy(f,dy)+Ddx(f,dx)
+    return out
+
+def Divergence3D(f,dx,dy,dz):
+    out=Ddz(f,dz)+Ddy(f,dy)+Ddx(f,dx)
+    return out
+
+def Divergence3DStretch(f,dx,dy):
+    out=DdzStretch(f)+Ddy(f,dy)+Ddx(f,dx)
+    return out
 
 def LaplacianHoriz(f,dx,dy):
     # Initialize the second derivatives arrays with zeros, same shape as f
@@ -112,6 +125,9 @@ def Laplacian3DStretch(f, dx, dy):
 # Ddz(f,1)
 # Ddy(f,1)
 # Ddx(f,1)
+# DivergenceHoriz(f,1,1)
+# Divergence3D(f,1,1,1)
+
 # HorizLaplacian(f,1,1)
 # Laplacian3D(f,1,1,1)
 
@@ -120,6 +136,7 @@ def Laplacian3DStretch(f, dx, dy):
 # data=xr.open_dataset(dir+'/cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
 # f=data['w'].interp(zf=data['zh']).data
 # DdzStretch(f)
+# Divergence3DStretch(f,1,1)
 # Laplacian3DStretch(f,1,1)
 
 

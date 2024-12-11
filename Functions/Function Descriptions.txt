@@ -1,0 +1,10 @@
+_NumericalFunctions.py_
+
+Includes numerical calculus functions including Gradient, 2D + 3D Divergence, and 2D + 3D Laplacian.
+
+Also includes Horizontal and Vertical Averaging functions and data slicing functions.
+
+
+_PlottingFunctions.py_
+
+Includes Horizontal and Vertical Contour Plots which ticks from data. Currently, data must be labeled as "data" and must be in xarray format with faces marked with "f" (e.g. "zf") and cell centers marked with "h" (e.g. "zh").

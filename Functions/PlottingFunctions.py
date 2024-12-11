@@ -28,28 +28,6 @@ data=xr.open_dataset(dir+'/cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
 f=data['w'].interp(zf=data['zh']).data
 
 
-# In[31]:
-
-
-def VerticalContour(f,units):
-    plt.contourf(f.T)
-    plt.xlabel('time');plt.ylabel('z (km)')
-
-    #Fixing Vertical Ticks
-    tick_inds=np.arange(0,len(data['zh'].values),2)
-    plt.yticks(ticks=tick_inds, labels=np.round(data['zh'].values[tick_inds], 1));
-    plt.yticks(ticks=tick_inds, labels=np.round(data['zh'].values[tick_inds], 1));
-    
-    #Scientific Notation
-    if units == "sci":
-        print('hrey')
-        from matplotlib.ticker import ScalarFormatter
-        formatter = ScalarFormatter(useMathText=True)
-        formatter.set_powerlimits((-3, 3))
-        plt.gca().xaxis.set_major_formatter(formatter)  
-        
-
-
 # In[254]:
 
 
