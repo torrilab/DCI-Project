@@ -1,0 +1,16 @@
+1. _/tracking_algorithms/_
+Code for tracking Lagrangian parcels in updrafts and cloudy updrafts.
+
+Code for tracking eulerian updrafts and cloudy updrafts.
+
+Code for calculating parcel entrainment and detrainment into cloudy updrafts located in /Entrainment.
+
+2. _/cold_pool_tracking/_
+Code for tracking Lagrangian parcels interaction with cold pools / gust fronts.
+
+3. _/figures/_
+Some code for creating figures for the project.
+
+4. _/invert_laplacian/_
+Test code for inverting laplacian lap(f)=g to solve for f.
+
