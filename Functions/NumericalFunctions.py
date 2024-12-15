@@ -14,14 +14,15 @@
 
 # In[8]:
 
-
 def Ddt(f,dt):
+    import numpy as np
     # dt=(data['time'][1]-data['time'][0]).item()/1e9
     _ddt=np.zeros_like(f)
     _ddt[1:-1] = (f[2:] - f[:-2]) / (dt)
     return _ddt
 
-def Ddz(f,dz):    
+def Ddz(f,dz):   
+    import numpy as np
     _ddz=np.zeros_like(f)
     _ddz[:, 1:-1] = (f[:, 2:] - f[:, :-2]) / (2 * dz)
     _ddz[:, 0] = (f[:, 1] - f[:, 0]) / dz  # Forward difference 
@@ -29,6 +30,7 @@ def Ddz(f,dz):
     return _ddz
 
 def DdzStretch(f):
+    import numpy as np
     #f must be interpolated to cell centers
     dz=np.diff(data['zf'].values)
     dz=dz.copy()[np.newaxis, :, np.newaxis, np.newaxis]
@@ -40,13 +42,15 @@ def DdzStretch(f):
     return ddz
 
 def Ddy(f,dy):    
+    import numpy as np
     _ddy=np.zeros_like(f)
     _ddy[:, :, 1:-1] = (f[:, :, 2:] - f[:, :, :-2]) / (2 * dy)
     _ddy[:, :, 0] = (f[:, :, 1] - f[:, :, 0]) / dy  # Forward difference 
     _ddy[:, :, -1] = (f[:, :, -1] - f[:, :, -2]) / dy  # Backward difference 
     return _ddy
 
-def Ddx(f,dx):    
+def Ddx(f,dx):   
+    import numpy as np
     _ddx=np.zeros_like(f)
     _ddx[:, :, :, 1:-1] = (f[:, :, :, 2:] - f[:, :, :, :-2]) / (2 * dx)
     _ddx[:, :, :, 0] = (f[:, :, :, 1] - f[:, :, :, 0]) / dx  # Forward difference 
@@ -67,6 +71,7 @@ def Divergence3DStretch(f,dx,dy):
     return out
 
 def LaplacianHoriz(f,dx,dy):
+    import numpy as np
     # Initialize the second derivatives arrays with zeros, same shape as f
     d2f_dx2 = np.zeros_like(f)
     d2f_dy2 = np.zeros_like(f)
@@ -80,6 +85,7 @@ def LaplacianHoriz(f,dx,dy):
     return out
 
 def Laplacian3D(f, dx, dy, dz):
+    import numpy as np
     #f must be provided at a specific 
     
     # Initialize the second derivatives arrays with zeros, same shape as f
@@ -97,6 +103,7 @@ def Laplacian3D(f, dx, dy, dz):
     return out
 
 def Laplacian3DStretch(f, dx, dy):
+    import numpy as np
     # Initialize the second derivatives arrays with zeros, same shape as f
     #f must be interpolated to cell centers
     #f must be an array array with f for face and h for center (e.g. zf/zh)
@@ -145,15 +152,19 @@ def Laplacian3DStretch(f, dx, dy):
 
 #Averaging and Slicing Functions
 def HorizAvg_zt(f): 
+    import numpy as np
     out=np.mean(f, axis=(2,3)) #takes horizontal average leaving f(t,z)
     return out
 def VertProfile_z(f): 
+    import numpy as np
     out=np.mean(f, axis=(0,2,3)) #takes horizontal + time average leaving f(z)
     return out
 def HorizProfile_txy(f): 
+    import numpy as np
     out=np.mean(f, axis=(1)) #takes horizontal + time average leaving f(z)
     return out    
 def Slice(type,f,ind):
+    import numpy as np
     if type=='t':
         out=f[ind]
     if type=='z':
