@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/animations/pybash.py", line 130, in <module>
+    create_animation(start_t=0, end_t=5, output_file=len(data['time'])-1, vmin_max_values=vmin_max_values)
+  File "/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/animations/pybash.py", line 124, in create_animation
+    ani.save(output_file, writer=writer)
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/site-packages/matplotlib/animation.py", line 1089, in save
+    with writer.saving(self._fig, filename, dpi), \
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/site-packages/matplotlib/animation.py", line 240, in saving
+    self.setup(fig, outfile, dpi, *args, **kwargs)
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/site-packages/matplotlib/animation.py", line 503, in setup
+    super().setup(fig, outfile, dpi=dpi)
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/site-packages/matplotlib/animation.py", line 195, in setup
+    Path(outfile).parent.resolve(strict=True)
+    ^^^^^^^^^^^^^
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/pathlib.py", line 871, in __new__
+    self = cls._from_parts(args)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/pathlib.py", line 509, in _from_parts
+    drv, root, parts = self._parse_args(args)
+                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/apps/software/lang/Anaconda3/2024.02-1/lib/python3.11/pathlib.py", line 493, in _parse_args
+    a = os.fspath(a)
+        ^^^^^^^^^^^^
+TypeError: expected str, bytes or os.PathLike object, not int

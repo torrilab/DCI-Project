@@ -14,3 +14,5 @@ Some code for creating figures for the project.
 4. _/invert_laplacian/_
 Test code for inverting laplacian lap(f)=g to solve for f.
 
+5. _/animations/_
+Makes animation for surface values of QV, TH, TH_e, QV_flux, and TH_flux

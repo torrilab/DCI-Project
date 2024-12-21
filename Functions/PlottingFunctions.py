@@ -139,3 +139,27 @@ def HorizContour(f, units, ax=None, nx=None, ny=None):
 # ax2 = fig.add_subplot(gs[0, 1])
 # VertContour(f[:,:,10,10], units="sci", ax=ax2)
 
+# In[]:
+
+#ANIMATION FUNCTION
+#MUST CREATE A SINGLE TIME PLOTTING FUNCTION TITLED single_plot(args) 
+
+from matplotlib.animation import FuncAnimation, PillowWriter
+def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
+    # Create a figure each time for the animation
+    fig = plt.figure(figsize=(18, 25))
+
+    # Define the update function for the animation
+    def update(t):
+        plt.clf()  # Clear the current figure
+        if np.mod(t, 20) == 0:
+            print(f'current t: {t}')
+        single_plot(fig, t, vmin_max_values)  # Pass the figure and vmin_max_values to single_plot
+
+    # Create the animation object
+    ani = FuncAnimation(fig, update, frames=np.arange(start_t, end_t), repeat=False)
+
+    # Save the animation as a GIF file using PillowWriter
+    writer = PillowWriter(fps=fps)
+    ani.save(output_file, writer=writer)
+
