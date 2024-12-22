@@ -50,6 +50,31 @@ surface_qv_data=qv_data[:,0,:,:]
 surface_th_data=th_data[:,0,:,:]
 surface_th_e_data=theta_e_data[:,0,:,:]
 
+
+#TIME 00:00:00 Function
+#Gets the realtime for the current timestep
+def get_time(t):
+    init_day,init_hour,init_min=0,0,0
+    times=data['time'].values/(1e9 * 60); time_inc=times.astype(int)[1]-times.astype(int)[0]
+    current_min=init_hour*60+init_min+time_inc*t;
+    
+    days = init_day + (current_min // (24 * 60))
+    
+    remain_min = (init_min+time_inc*t) % (24 * 60); 
+    hours = (init_hour + (remain_min // 60)) % 24
+    mins = remain_min % 60
+
+    ##############################################
+    days=str(days);hours=str(hours);mins=str(mins)
+    if len(days)==1:days='0'+days
+    if len(hours)==1:hours='0'+hours
+    if len(mins)==1:mins='0'+mins
+    ##############################################
+
+    combo=days+":"+hours+":"+mins
+    return(days,hours,mins),(combo)
+    
+
 # Store vmin and vmax for each variable in a list of tuples
 vmin_max_values = [
     (np.min(surface_qv_data), np.max(surface_qv_data)),  # (vmin_qv, vmax_qv)
@@ -59,6 +84,7 @@ vmin_max_values = [
     (np.min(surface_thflux_data), np.max(surface_thflux_data)),  # (vmin_thflux, vmax_thflux)
 ]
 
+#PLOTTING FUNCTION
 def single_plot(fig, t, vmin_max_values):
     gs = gridspec.GridSpec(5, 1, figure=fig, hspace=0.1)
     ax1 = fig.add_subplot(gs[0, 0])
@@ -83,7 +109,7 @@ def single_plot(fig, t, vmin_max_values):
 
     # Create contour plots with consistent levels for each variable
     cf1 = ax1.contourf(surface_qv_data[t], levels=qv_levels)
-    ax1.set_title("Surface " + r"$q_v$")
+    ax1.set_title("Surface " + r"$q_v$" + f" -- Time {get_time(t)[1]}")
     
     cf2 = ax2.contourf(surface_th_data[t], levels=th_levels)
     ax2.set_title("Surface " + r"$\theta$")
@@ -103,6 +129,9 @@ def single_plot(fig, t, vmin_max_values):
     fig.colorbar(cf3, ax=ax3)
     fig.colorbar(cf4, ax=ax4)
     fig.colorbar(cf5, ax=ax5)
+
+#ANIMATION FUNCTION
+#MUST CREATE A SINGLE TIME PLOTTING FUNCTION TITLED single_plot(args) 
 
 from matplotlib.animation import FuncAnimation, PillowWriter
 def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
@@ -127,4 +156,5 @@ def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
 # Example usage
 output_filename = dir+'animations/QV_TH_animation_1km.gif'
 # create_animation(start_t=0, end_t=5, output_file=output_filename, vmin_max_values=vmin_max_values)
-create_animation(start_t=0, end_t=5, output_file=len(data['time'])-1, vmin_max_values=vmin_max_values)
+create_animation(start_t=0, end_t=len(data['time'])-1, output_file=output_filename, vmin_max_values=vmin_max_values)
+

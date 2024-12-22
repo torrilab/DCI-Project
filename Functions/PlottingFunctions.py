@@ -139,7 +139,36 @@ def HorizContour(f, units, ax=None, nx=None, ny=None):
 # ax2 = fig.add_subplot(gs[0, 1])
 # VertContour(f[:,:,10,10], units="sci", ax=ax2)
 
-# In[]:
+
+# In[ ]:
+
+
+#TIME 00:00:00 Function
+#Gets the realtime for the current timestep
+def get_time(t):
+    init_day,init_hour,init_min=0,0,0
+    times=data['time'].values/(1e9 * 60); time_inc=times.astype(int)[1]-times.astype(int)[0]
+    current_min=init_hour*60+init_min+time_inc*t;
+    
+    days = init_day + (current_min // (24 * 60))
+    
+    remain_min = (init_min+time_inc*t) % (24 * 60); 
+    hours = (init_hour + (remain_min // 60)) % 24
+    mins = remain_min % 60
+
+    ##############################################
+    days=str(days);hours=str(hours);mins=str(mins)
+    if len(days)==1:days='0'+days
+    if len(hours)==1:hours='0'+hours
+    if len(mins)==1:mins='0'+mins
+    ##############################################
+
+    combo=days+":"+hours+":"+mins
+    return(days,hours,mins),(combo)
+
+
+# In[ ]:
+
 
 #ANIMATION FUNCTION
 #MUST CREATE A SINGLE TIME PLOTTING FUNCTION TITLED single_plot(args) 
@@ -162,4 +191,21 @@ def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
     # Save the animation as a GIF file using PillowWriter
     writer = PillowWriter(fps=fps)
     ani.save(output_file, writer=writer)
+
+
+# In[ ]:
+
+
+#CONVERT GIF TO MP4
+def convert_gif_to_mp4(input_file, output_file, fps):
+    from moviepy.editor import VideoFileClip
+    # Load the GIF file
+    gif_clip = VideoFileClip(input_file)
+
+    # Set the desired framerate if provided
+    if fps:
+        gif_clip = gif_clip.set_fps(fps)
+
+    # Write the GIF as an MP4 file
+    gif_clip.write_videofile(output_file, codec="libx264")
 
