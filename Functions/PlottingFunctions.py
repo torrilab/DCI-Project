@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 #Importing Packages
@@ -18,17 +18,17 @@ from matplotlib.ticker import ScalarFormatter
 import matplotlib.gridspec as gridspec
 
 
-# In[160]:
+# In[4]:
 
 
-# #TESTING
-# ######################################
-dir='/mnt/lustre/koa/koastore/torri_group/air_directory/'
-data=xr.open_dataset(dir+'/cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
-f=data['w'].interp(zf=data['zh']).data
+# # #TESTING
+# # ######################################
+# dir='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/'
+# data=xr.open_dataset(dir+'../cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
+# f=data['w'].interp(zf=data['zh']).data
 
 
-# In[254]:
+# In[12]:
 
 
 def VertContour(f, units, xax, ax=None, ny=None, nx=None):
@@ -78,7 +78,7 @@ def VertContour(f, units, xax, ax=None, ny=None, nx=None):
         
     # plt.close(fig)
     return ax
-    
+        
 def HorizContour(f, units, ax=None, nx=None, ny=None):
     # Create an axis if one is not provided
     if ax is None:
@@ -111,6 +111,33 @@ def HorizContour(f, units, ax=None, nx=None, ny=None):
     
     # plt.close(fig)
     return ax
+
+
+# In[258]:
+
+
+# #TESTING
+# ######################################
+# VertContour(f[:,:,10,10], units="sci", xax='t')
+# VertContour(f[10,:,:,10], units="sci", xax='y',nx=10)
+# VertContour(f[10,:,10,:], units="sci", xax='x')
+# HorizContour(f[10,10,:,:], units="sci")
+
+
+# In[221]:
+
+
+# #How To Plot Multiple GridSpec Subplots
+# fig = plt.figure(figsize=(10, 5))
+# gs = gridspec.GridSpec(1, 2, figure=fig)
+
+# # Create first subplot
+# ax1 = fig.add_subplot(gs[0, 0])
+# VertContour(f[:,:,10,10], units="sci", ax=ax1)
+
+# # Create second subplot
+# ax2 = fig.add_subplot(gs[0, 1])
+# VertContour(f[:,:,10,10], units="sci", ax=ax2)
 
 
 # In[258]:
@@ -216,7 +243,7 @@ def convert_gif_to_mp4(input_file, output_file, fps):
 
 
 
-# In[ ]:
+# In[9]:
 
 
 #USEFUL VERTICAL PROFILE PLOTTING FUNCTIONS
@@ -248,7 +275,7 @@ def fix_x_limits(axes):
     for axis in axes:
         axis.set_xlim(result)
 
-def fix_x_limits(axes):
+def fix_y_limits(axes):
     #Bounds all plots by min and max of the current ylims, so all subplots match
     #Provide Axises in terms of [ax1,ax2,...]
     

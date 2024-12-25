@@ -1,3 +1,6 @@
+1. Lagrangian_Binary_Array.ipynb
+Important Code For Generating lagrangian X,Y,Z grids and binary array for cloudy updraft (or general updraft if needed).
+
 /_BFS_/
 Breadth-first Search (BFS) Algorithms
 
@@ -11,7 +14,7 @@ Cloudy Updraft Entrainment/Detrainment Calculations
 
 1. Eulerian Entrainment.ipynb
 
-2. Lagrangian_Binary_Array.ipynb
+2. Entrainment + Residence.ipynb
 
 
 /_Tracking_algorithms_/
