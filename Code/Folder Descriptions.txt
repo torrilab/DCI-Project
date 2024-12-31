@@ -16,3 +16,9 @@ Test code for inverting laplacian lap(f)=g to solve for f.
 
 5. _/Animations/_
 Makes animation for surface values of QV, TH, TH_e, QV_flux, and TH_flux
+
+6. /_Variable_Calculations_/
+Creates Variables Not Included in Model Output
+	a. Equivalent_Potential_Temperature.ipynb
+	b. Virtual_Potential_Temperature
+	c. Moist_Static_Energy

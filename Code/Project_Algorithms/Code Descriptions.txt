@@ -25,12 +25,6 @@ Lagrangian Parcel Convergence Line (Cl) to Level of Free-convection (Lfc) Tracki
 2. lagrangian_tracking.ipynb
 
 
-/_Variable_Calculations_/
-Creates Variables Not Included in Model Output
-
-1. Equivalent_Potential_Temperature.ipynb
-
-
 /_Vertical+Budget_Profiles_/
 Vertical Profiles for Variables and Budget Variables
 
