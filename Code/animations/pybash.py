@@ -1,3 +1,6 @@
+#250 M DATA
+###########################################################################################
+
 #Loading in Packages and Data
 
 #Importing Packages
@@ -28,34 +31,148 @@ def coefs(coefficients,degree):
 
 #Importing Model Data
 check=False
-dir='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/'
-netCDF=xr.open_dataset(dir+'../cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
-true_time=netCDF['time']
-parcel=xr.open_dataset(dir+'../cm1r20.3/run/cm1out_pdata_test5tundra-7_062217.nc') #***
-times=netCDF['time'].values/(1e9 * 60); times=times.astype(float);
+dir='/home/air673/koa_scratch/'
 
-#Restricts the timesteps of the data from timesteps0 to 140
-data=netCDF.isel(time=np.arange(0,140+1))
-parcel=parcel.isel(time=np.arange(0,140+1))
+netCDF=xr.open_dataset(dir+'cm1out.nc') #***
+res='250m'
 
-qv_data=data['qv'].data
-th_data=data['th'].data
-import h5py
-with h5py.File(dir + 'theta_e.h5', 'r') as f:
-    theta_e_data = f['theta_e'][:]
-surface_qvflux_data=data['qvflux'].data
-surface_thflux_data=data['thflux'].data
+def minmax_surface_val_2D(var):
+    if len(netCDF[var].dims) != 3:
+        raise ValueError("Data is not 2D + Time")
+    print(f'working on {var}\n')
+    
+    t=0
+    min_val=netCDF[var].isel(time=t).min(dim=['yh', 'xh']).item()
+    max_val=netCDF[var].isel(time=t).max(dim=['yh', 'xh']).item()
+    
+    for t in np.arange(1,len(netCDF['time'])):
+        if np.mod(t,50)==0: print(f'current time {t}')
+    
+        current_min=netCDF[var].isel(time=t).min(dim=['yh', 'xh']).item()
+        current_max=netCDF[var].isel(time=t).max(dim=['yh', 'xh']).item()
+        min_val=min(min_val,current_min)
+        max_val=max(max_val,current_max)
 
-surface_qv_data=qv_data[:,0,:,:]
-surface_th_data=th_data[:,0,:,:]
-surface_th_e_data=theta_e_data[:,0,:,:]
+    #RETURNING
+    if var in ['qv']:
+        min_val*=1000
+        max_val*=1000
+    return (min_val,max_val)
+
+# minmax_surface_val_2D('qvflux')[0]
+
+def minmax_surface_val_3D(var):
+    if len(netCDF[var].dims) != 4:
+        raise ValueError("Data is not 3D + Time")
+    print(f'working on {var}\n')
+    
+    t=0
+    min_val=netCDF[var].isel(time=t,zh=0).min(dim=['yh', 'xh']).item()
+    max_val=netCDF[var].isel(time=t,zh=0).max(dim=['yh', 'xh']).item()
+    
+    for t in np.arange(1,len(netCDF['time'])):
+        if np.mod(t,50)==0: print(f'current time {t}')
+    
+        current_min=netCDF[var].isel(time=t,zh=0).min(dim=['yh', 'xh']).item()
+        current_max=netCDF[var].isel(time=t,zh=0).max(dim=['yh', 'xh']).item()
+        min_val=min(min_val,current_min)
+        max_val=max(max_val,current_max)
+
+    #RETURNING
+    if var in ['qv']:
+        min_val*=1000
+        max_val*=1000
+    return (min_val,max_val)
+
+# minmax_surface_val_3D('qv')[0]
+
+######################################################
+dir2='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/Variable_Calculation/'
+def get_theta_v(t):
+    import h5py
+    with h5py.File(dir2 + 'theta_v'+f'_{res}'+'.h5', 'r') as f:
+        theta_v_data = f['theta_v'][t]
+    return theta_v_data
+
+def minmax_theta_v():
+    # if len(array.shape) != 3:
+        # raise ValueError("Data is not 2D + Time")
+    print(f'working on theta_v\n')
+    
+    t=0
+    array=get_theta_v(t)
+    min_val=np.min(array[0])
+    max_val=np.max(array[0])
+
+    for t in np.arange(1,len(netCDF['time'])):
+        if np.mod(t,50)==0: print(f'current time {t}')
+        array=get_theta_v(t)
+        current_min=np.min(array[0])
+        current_max=np.max(array[0])
+
+        min_val=min(min_val,current_min)
+        max_val=max(max_val,current_max)
+    
+    return (min_val,max_val)
+
+def get_MSE(t):
+    import h5py
+    with h5py.File(dir2 + 'MSE'+f'_{res}'+'.h5', 'r') as f:
+        theta_v_data = f['MSE'][t]
+    return theta_v_data
+
+def minmax_MSE():
+    # if len(array.shape) != 3:
+        # raise ValueError("Data is not 2D + Time")
+    print(f'working on mse\n')
+    
+    t=0
+    array=get_MSE(t)
+    min_val=np.min(array[0])
+    max_val=np.max(array[0])
+
+    for t in np.arange(1,len(netCDF['time'])):
+        if np.mod(t,50)==0: print(f'current time {t}')
+        array=get_MSE(t)
+        current_min=np.min(array[0])
+        current_max=np.max(array[0])
+
+        min_val=min(min_val,current_min)
+        max_val=max(max_val,current_max)
+    
+    return (min_val,max_val)
+
+def load_vars(data,t):
+    surface_qv_data=data['qv'].data[0]*1000
+    surface_th_data=data['th'].data[0]
+    surface_qvflux_data=data['qvflux'].data
+    surface_thflux_data=data['thflux'].data
+
+    import h5py
+    theta_v_data=get_theta_v(t)[0]
+    surface_mse_data=get_MSE(t)[0]
+
+    return surface_qv_data,surface_th_data,theta_v_data,surface_qvflux_data,surface_thflux_data,surface_mse_data
+
+
+# Store vmin and vmax for each variable in a list of tuples
+vmin_max_values = [
+    minmax_surface_val_3D('qv'),  
+    minmax_surface_val_3D('th'),  
+    minmax_theta_v(), 
+    minmax_surface_val_2D('qvflux'),  
+    minmax_surface_val_2D('thflux'),  
+    minmax_MSE()
+]
+
+
 
 
 #TIME 00:00:00 Function
 #Gets the realtime for the current timestep
 def get_time(t):
     init_day,init_hour,init_min=0,0,0
-    times=data['time'].values/(1e9 * 60); time_inc=times.astype(int)[1]-times.astype(int)[0]
+    times=netCDF['time'].values/(1e9 * 60); time_inc=times.astype(int)[1]-times.astype(int)[0]
     current_min=init_hour*60+init_min+time_inc*t;
     
     days = init_day + (current_min // (24 * 60))
@@ -73,62 +190,67 @@ def get_time(t):
 
     combo=days+":"+hours+":"+mins
     return(days,hours,mins),(combo)
-    
 
-# Store vmin and vmax for each variable in a list of tuples
-vmin_max_values = [
-    (np.min(surface_qv_data), np.max(surface_qv_data)),  # (vmin_qv, vmax_qv)
-    (np.min(surface_th_data), np.max(surface_th_data)),  # (vmin_th, vmax_th)
-    (np.min(surface_th_e_data), np.max(surface_th_e_data)),  # (vmin_the, vmax_the)
-    (np.min(surface_qvflux_data), np.max(surface_qvflux_data)),  # (vmin_qvflux, vmax_qvflux)
-    (np.min(surface_thflux_data), np.max(surface_thflux_data)),  # (vmin_thflux, vmax_thflux)
-]
+
+
 
 #PLOTTING FUNCTION
 def single_plot(fig, t, vmin_max_values):
-    gs = gridspec.GridSpec(5, 1, figure=fig, hspace=0.1)
-    ax1 = fig.add_subplot(gs[0, 0])
-    ax2 = fig.add_subplot(gs[1, 0])
-    ax3 = fig.add_subplot(gs[2, 0])
-    ax4 = fig.add_subplot(gs[3, 0])
-    ax5 = fig.add_subplot(gs[4, 0])
+    gs = gridspec.GridSpec(3, 2, figure=fig, hspace=0.2, wspace=0.1)
+    ax1 = fig.add_subplot(gs[0, 0]) #qv
+    ax2 = fig.add_subplot(gs[0, 1]) #qv_flux
+    ax3 = fig.add_subplot(gs[1,0]) #th
+    ax4 = fig.add_subplot(gs[1, 1]) #th_flux
+    ax5 = fig.add_subplot(gs[2,0]) #th_v
+    ax6 = fig.add_subplot(gs[2,1]) #MSE
 
     # Extract vmin and vmax from the tuple list for each variable
     vmin_qv, vmax_qv = vmin_max_values[0]
     vmin_th, vmax_th = vmin_max_values[1]
-    vmin_th_e, vmax_th_e = vmin_max_values[2]
+    vmin_th_v, vmax_th_v = vmin_max_values[2]
     vmin_qvflux, vmax_qvflux = vmin_max_values[3]
     vmin_thflux, vmax_thflux = vmin_max_values[4]
+    vmin_mse, vmax_mse = vmin_max_values[5]
 
     # Define the levels using linspace for each variable to ensure consistent color mapping
     qv_levels = np.linspace(vmin_qv, vmax_qv, 100)
     th_levels = np.linspace(vmin_th, vmax_th, 100)
-    th_e_levels = np.linspace(vmin_th_e, vmax_th_e, 100)
+    th_v_levels = np.linspace(vmin_th_v, vmax_th_v, 100)
     qvflux_levels = np.linspace(vmin_qvflux, vmax_qvflux, 100)
     thflux_levels = np.linspace(vmin_thflux, vmax_thflux, 100)
+    mse_levels = np.linspace(vmin_mse, vmax_mse, 100)
+
+    #Get the Variables for Current Timestep
+    data=netCDF.isel(time=t)
+    [surface_qv_data, surface_th_data, surface_th_v_data, surface_qvflux_data, surface_thflux_data, surface_mse_data]=load_vars(data,t)
 
     # Create contour plots with consistent levels for each variable
-    cf1 = ax1.contourf(surface_qv_data[t], levels=qv_levels)
+    cf1 = ax1.contourf(surface_qv_data, levels=qv_levels)
     ax1.set_title("Surface " + r"$q_v$" + f" -- Time {get_time(t)[1]}")
+
+    cf2 = ax2.contourf(surface_qvflux_data, levels=qvflux_levels)
+    ax2.set_title("Surface " + r"$q_v$" + " Flux")
     
-    cf2 = ax2.contourf(surface_th_data[t], levels=th_levels)
-    ax2.set_title("Surface " + r"$\theta$")
+    cf3 = ax3.contourf(surface_th_data, levels=th_levels)
+    ax3.set_title("Surface " + r"$\theta$")
+
+    cf4 = ax4.contourf(surface_thflux_data, levels=thflux_levels)
+    ax4.set_title("Surface " + r"$\theta$" + " Flux")
     
-    cf3 = ax3.contourf(surface_th_e_data[t], levels=th_e_levels)
-    ax3.set_title("Surface " + r"$\theta_e$")
-    
-    cf4 = ax4.contourf(surface_qvflux_data[t], levels=qvflux_levels)
-    ax4.set_title("Surface " + r"$q_v$" + " Flux")
-    
-    cf5 = ax5.contourf(surface_thflux_data[t], levels=thflux_levels)
-    ax5.set_title("Surface " + r"$\theta$" + " Flux")
+    cf5 = ax5.contourf(surface_th_v_data, levels=th_v_levels)
+    ax5.set_title("Surface " + r"$\theta_v$")
+
+    cf6 = ax6.contourf(surface_mse_data, levels=mse_levels)
+    ax6.set_title("Surface " + "MSE")
     
     # Add colorbars to each subplot
-    fig.colorbar(cf1, ax=ax1)
-    fig.colorbar(cf2, ax=ax2)
-    fig.colorbar(cf3, ax=ax3)
-    fig.colorbar(cf4, ax=ax4)
-    fig.colorbar(cf5, ax=ax5)
+    fig.colorbar(cf1, ax=ax1,label=r'$g/kg$')
+    fig.colorbar(cf2, ax=ax2,label=r'$g/g \: m/s$')
+    fig.colorbar(cf3, ax=ax3,label=r'$T$')
+    fig.colorbar(cf4, ax=ax4,label=r'$K \: m/s$')
+    fig.colorbar(cf5, ax=ax5,label=r'$K$')
+    fig.colorbar(cf6, ax=ax6,label=r'$g/kg$')
+
 
 #ANIMATION FUNCTION
 #MUST CREATE A SINGLE TIME PLOTTING FUNCTION TITLED single_plot(args) 
@@ -149,12 +271,43 @@ def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
     ani = FuncAnimation(fig, update, frames=np.arange(start_t, end_t), repeat=False)
 
     # Save the animation as a GIF file using PillowWriter
-    writer = PillowWriter(fps=fps)
+    writer = PillowWriter(fps=fps) 
     ani.save(output_file, writer=writer)
 
 
-# Example usage
-output_filename = dir+'animations/QV_TH_animation_1km.gif'
-# create_animation(start_t=0, end_t=5, output_file=output_filename, vmin_max_values=vmin_max_values)
-create_animation(start_t=0, end_t=len(data['time'])-1, output_file=output_filename, vmin_max_values=vmin_max_values)
+# # RUNNING CODE
+# output_filename = dir+'animations/QV_TH_animation_1km.gif'
+# create_animation(start_t=33, end_t=35, output_file=output_filename, vmin_max_values=vmin_max_values)
+# # create_animation(start_t=0, end_t=len(netCDF['time'])-1, output_file=output_filename, vmin_max_values=vmin_max_values)
 
+dir3='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/'
+# output_filename = dir3+'Animations/QV_TH_animation_1km.gif'
+output_filename = dir3+'Animations/QV_TH_animation_250m.gif'
+# create_animation(start_t=0, end_t=3, output_file=output_filename, vmin_max_values=vmin_max_values) #TESTING
+create_animation(start_t=0, end_t=len(netCDF['time'])-1, output_file=output_filename, vmin_max_values=vmin_max_values)
+
+
+def convert_gif_to_mp4(input_file, output_file, fps):
+    from moviepy.editor import VideoFileClip
+    # Load the GIF file
+    gif_clip = VideoFileClip(input_file)
+
+    # Set the desired framerate if provided
+    if fps:
+        gif_clip = gif_clip.set_fps(fps)
+
+    # Write the GIF as an MP4 file
+    gif_clip.write_videofile(output_file, codec="libx264")
+
+
+
+# #RUNNING CONVERSION
+# res='1km'
+# input_filename = dir + 'Animations/QV_TH_animation_'+res+'.gif'
+# output_filename = dir + 'Animations/QV_TH_animation_'+res+'.mp4'
+# convert_gif_to_mp4(input_filename, output_filename, fps=None)  # Optional fps argument
+
+res='250m'
+input_filename = dir + 'animations/QV_TH_animation_'+res+'.gif'
+output_filename = dir + 'animations/QV_TH_animation_'+res+'.mp4'
+convert_gif_to_mp4(input_filename, output_filename, fps=None)  # Optional fps argument
