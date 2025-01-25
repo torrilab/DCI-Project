@@ -297,6 +297,49 @@ def fix_y_limits(axes):
 
 # In[ ]:
 
+def x_space_labels(axises,type):
+    for axis in axises: #ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
+
+        if type=='x':
+            zh = data['xh'].values
+        elif type=='y':
+            zh = data['xh'].values
+        elif type=='t':
+            zh = data['time'].values.astype('timedelta64[m]').astype(int)
+    
+        ticks = axis.get_xticks()
+        
+        # Convert y-tick positions to integer indices and ensure they're within bounds
+        ytick_indices = ticks.astype(int)
+        valid_mask = (ytick_indices >= 0) & (ytick_indices < len(zh))
+    
+        # Filter valid tick positions and corresponding labels
+        filtered_ticks = ticks[valid_mask]
+        filtered_tick_labels = [f'{zh[i]:.1f}' for i in ytick_indices[valid_mask]]
+    
+        # Apply only valid ticks and labels
+        axis.set_xticks(filtered_ticks)
+        axis.set_xticklabels(filtered_tick_labels)
+
+
+def y_space_labels(axises):
+    for axis in axises: #ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
+        zh = data['zh'].values
+    
+        ticks = axis.get_yticks()
+        
+        # Convert y-tick positions to integer indices and ensure they're within bounds
+        ytick_indices = ticks.astype(int)
+        valid_mask = (ytick_indices >= 0) & (ytick_indices < len(zh))
+    
+        # Filter valid tick positions and corresponding labels
+        filtered_ticks = ticks[valid_mask]
+        filtered_tick_labels = [f'{zh[i]:.1f}' for i in ytick_indices[valid_mask]]
+    
+        # Apply only valid ticks and labels
+        axis.set_yticks(filtered_ticks)
+        axis.set_yticklabels(filtered_tick_labels)
+
 
 
 
