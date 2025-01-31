@@ -57,6 +57,22 @@ def Ddx(f,dx):
     _ddx[:, :, :, -1] = (f[:, :, :, -1] - f[:, :, :, -2]) / dx  # Backward difference 
     return _ddx
 
+def Ddy_3D(f,dy):   
+    import numpy as np
+    _ddy=np.zeros_like(f)
+    _ddy[:, 1:-1] = (f[:, 2:] - f[:, :-2]) / (2 * dy)
+    _ddy[:, 0] = (f[:, 1] - f[:, 0]) / dy  # Forward difference 
+    _ddy[:, -1] = (f[:, -1] - f[:, -2]) / dy  # Backward difference 
+    return _ddy
+
+def Ddx_3D(f,dx): 
+    import numpy as np
+    _ddx=np.zeros_like(f)
+    _ddx[:, :, 1:-1] = (f[:, :, 2:] - f[:, :, :-2]) / (2 * dx)
+    _ddx[:, :, 0] = (f[:, :, 1] - f[:, :, 0]) / dx  # Forward difference 
+    _ddx[:, :, -1] = (f[:, :, -1] - f[:, :, -2]) / dx  # Backward difference 
+    return _ddx
+
 
 def DivergenceHoriz(f,dx,dy):
     out=Ddy(f,dy)+Ddx(f,dx)
