@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python
-#SBATCH --array=1-60
-##SBATCH --array=1-60%5 #%+number after to limit number of of runs at a time
+##SBATCH --array=1-60
+#SBATCH --array=1-60%14 #%+number after to limit number of of runs at a time
 #SBATCH --account=torri
 #SBATCH --partition=torri
 
@@ -12,7 +12,7 @@
 #SBATCH --nodes=1
 #SBATCH  --tasks-per-node=1  
 #SBATCH --cpus-per-task=1 #Each node has 47 CPUs
-#SBATCH --mem=12G #GBTotal 180GB per node (180G/60 = 3G) #0 for full node memory
+#SBATCH --mem=48G #GBTotal 180GB per node (180G/60 = 3G) #0 for full node memory
 ##SBATCH --mem=0
 ##SBATCH --constraint=“ib_hdr” # will allow a mix of HDR200 and HDR100 nodes
 ##SBATCH --constraint=“ib_hdr100” # explicitly only allow HDR100 nodes
