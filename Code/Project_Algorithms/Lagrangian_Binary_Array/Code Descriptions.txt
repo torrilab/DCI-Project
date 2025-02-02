@@ -1,7 +1,0 @@
-1. /_Lagrangian_Binary_Array_/
-
-Creates Lagrangian Binary Array A and Eulerian X,Y,Z arrays.
-Uses that to calculate:
-a. Entrainment/Detrainment
-b. Lagrangian Tracked Parcel Vertical Profiles (+Budgets in future): ALL v SHALLOW vs DEEP, CL vs nonCL, and SBZ vs nonSBZ.
-c. Residence Times: entrainment times, environment preconditioning for tracked parcelss
