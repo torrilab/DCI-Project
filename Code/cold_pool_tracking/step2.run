@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH --job-name=step2
+#SBATCH --partition=gpu
+##SBATCH --partition=kill-shared
+
+#SBATCH --time=3-00:00:00
+#SBATCH --cpus-per-task=10
+##SBATCH --ntasks=1
+#SBATCH --nodes=1
+#SBATCH  --tasks-per-node=1
+####SBATCH --mem=62000 ## max amount of memory per node you require, 60.55G
+#SBATCH --mem=0 #10 gbs (bytes is for step 1 nc 16000)
+##SBATCH --core-spec=0 ## Uncomment to allow jobs to request all cores on a node
+
+#SBATCH --gres=gpu:NV-RTX-A4000:1  
+
+### To request only 1 of the two GPUs in the node, you would do: gpu:NV-K40:1
+### To request 4 or 8 nodes, do :4 or :8
+##SBATCH --gres=gpu:NV-H100:1
+##SBATCH --gres=gpu:NV-V100-SXM2:1  
+##SBATCH --gres=gpu:NV-L40:1  
+##SBATCH --gres=gpu:NV-RTX5000:1  
+##SBATCH --gres=gpu:NV-RTX2080Ti:1  
+##SBATCH --gres=gpu:NV-A30:1  
+##SBATCH --gres=gpu:NV-RTX2080Ti:1  
+##SBATCH --gres=gpu:NV-RTX2070i:1  
+
+#SBATCH --error=step2-%A.err
+#SBATCH --output=step2-%A.out
+## Remote notification
+#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT_80
+#SBATCH --mail-user=air673@hawaii.edu
+
+module purge
+module load lang/Anaconda3
+source activate gpu_env
+export PYTHONUNBUFFERED=TRUE #allows print statements during run
+export TF_FORCE_UNIFIED_MEMORY=${TF_FORCE_UNIFIED_MEMORY:-1}
+export XLA_PYTHON_CLIENT_MEM_FRACTION=${XLA_PYTHON_CLIENT_MEM_FRACTION:-9.0}
+python -u step2-color_cores-BFSmatrix-gpu-240603.py
+
