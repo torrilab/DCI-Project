@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/animations/pybash.py", line 129, in <module>
-    create_animation(start_t=0, end_t=5, output_file=len(data['time'])-1, vmin_max_values=vmin_max_values)
-  File "/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/animations/pybash.py", line 119, in create_animation
-    ani = FuncAnimation(fig, update, frames=np.arange(start_t, end_t), repeat=False)
-          ^^^^^^^^^^^^^
-NameError: name 'FuncAnimation' is not defined
