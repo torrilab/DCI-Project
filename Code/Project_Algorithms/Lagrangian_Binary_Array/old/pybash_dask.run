@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=python
+##SBATCH --partition=shared
+#SBATCH --account=torri #comment for shared
+#SBATCH --partition=torri #comment for shared
+
+#SBATCH --time=3-00:00:00
+
+#SBATCH --nodes=1
+#SBATCH  --ntasks-per-node=40
+#SBATCH --ntasks=40
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1 #max 16
+
+#SBATCH --mem=160G #192G max
+
+#SBATCH --error=pybash-%A.err
+#SBATCH --output=pybash-%A.out
+## Remote notification/
+#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT_80
+#SBATCH --mail-user=air673@hawaii.edu
+
+module purge
+module load lang/Anaconda3
+export PYTHONUNBUFFERED=TRUE #allows print statements during run
+python -u pybash_dask.py
