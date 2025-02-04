@@ -39,9 +39,3 @@ Vertical Profiles for Variables and Budget Variables
 4. Euleriab_Budget_Profile.ipynb
 
 5. DEEP_Lagrangian_Budget_profile.ipynb
-
-
-/_Other_/
-
-1. trajectoryjob.ipynb
-Forgot Exact Purpose, It is Important Though
