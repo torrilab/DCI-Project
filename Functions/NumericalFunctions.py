@@ -57,6 +57,14 @@ def Ddx(f,dx):
     _ddx[:, :, :, -1] = (f[:, :, :, -1] - f[:, :, :, -2]) / dx  # Backward difference 
     return _ddx
 
+def Ddz_3D(f,dz): 
+    import numpy as np
+    _ddz=np.zeros_like(f)
+    _ddz[1:-1] = (f[2:] - f[:-2]) / (2 * dz)
+    _ddz[0] = (f[1] - f[0]) / dz  # Forward difference 
+    _ddz[-1] = (f[-1] - f[-2]) / dz  # Backward difference 
+    return _ddz
+
 def Ddy_3D(f,dy):   
     import numpy as np
     _ddy=np.zeros_like(f)
