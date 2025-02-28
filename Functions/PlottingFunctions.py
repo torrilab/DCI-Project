@@ -309,38 +309,58 @@ def fix_y_limits(axes):
 
 
 # In[ ]:
-import matplotlib.ticker as ticker
-
-def fix_tick_labels(axises, data, tick_dim, data_dim, num_ticks):
+def fix_tick_labels(axises, data, tick_dim, data_dim, d_xtick, d_ytick, cell_loc, round, meters):
     # PLOT MUST BE IN AXIS FORM
     # AXISES MUST BE STORED IN A LIST []
     for axis in axises:  # ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
-        
+
+        # #if data on cell face
         if data_dim == 'x':
-            zh = data['xf']-data['xf'][0]
+            if cell_loc=='center':
+                zh = (data['xh']-data['xh'][0]).values
+            elif cell_loc=='face':
+                zh = (data['xf']-data['xf'][0]).values
         elif data_dim == 'y':
-            zh = data['yf'].values
+            if cell_loc=='center':
+                zh = data['yh'].values
+            elif cell_loc=='face':
+                zh = data['yf'].values
         elif data_dim == 'z':
-            zh = data['zf'].values
+            if cell_loc=='center':
+                zh = data['zh'].values
+            elif cell_loc=='face':
+                zh = data['zf'].values
         elif data_dim == 't':
             zh = data['time'].values.astype('timedelta64[m]').astype(int)
         
         # Set tick locator to control number of ticks
         if tick_dim == 'x':
-            axis.xaxis.set_major_locator(ticker.MaxNLocator(nbins=num_ticks))
-            # axis.xaxis.set_major_locator(ticker.LinearLocator(num_ticks))
+            num_xticks=len(zh)/d_xtick
+            # axis.xaxis.set_major_locator(ticker.MaxNLocator(nbins=num_xticks))
+            axis.xaxis.set_major_locator(ticker.LinearLocator(int(num_xticks)))  # Ensures exact number of ticks
         elif tick_dim == 'y':
-            axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=num_ticks))
-        
+            num_yticks=len(zh)/d_ytick
+            # axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=num_yticks))
+            axis.yaxis.set_major_locator(ticker.LinearLocator(int(num_yticks)))  # Ensures exact number of ticks
+        elif tick_dim == 'z':
+            num_yticks=len(zh)/d_ytick
+            # axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=num_yticks))
+            axis.yaxis.set_major_locator(ticker.LinearLocator(int(num_yticks)))  # Ensures exact number of ticks
+
         ticks = axis.get_xticks() if tick_dim == 'x' else axis.get_yticks()
-        
+
         # Convert tick positions to integer indices
+
         tick_indices = ticks.astype(int)
         valid_mask = (tick_indices >= 0) & (tick_indices < len(zh))
     
         # Filter valid tick positions and corresponding labels
         filtered_ticks = ticks[valid_mask]
-        filtered_tick_labels = [f'{zh[i]:.1f}' for i in tick_indices[valid_mask]]
+
+        if meters==True:
+            filtered_tick_labels = [f'{zh[i]*1000:.{round}f}' for i in tick_indices[valid_mask]]
+        elif meters==False:
+            filtered_tick_labels = [f'{zh[i]:.{round}f}' for i in tick_indices[valid_mask]]
     
         # Apply only valid ticks and labels
         if tick_dim == 'x':
@@ -349,9 +369,40 @@ def fix_tick_labels(axises, data, tick_dim, data_dim, num_ticks):
         elif tick_dim == 'y':
             axis.set_yticks(filtered_ticks)
             axis.set_yticklabels(filtered_tick_labels)
+        elif tick_dim == 'z':
+            axis.set_yticks(filtered_ticks)
+            axis.set_yticklabels(filtered_tick_labels)
+# #TESTING
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import matplotlib.ticker as ticker
+# import xarray as xr
+
+# # Generate sample data
+# # data2 = np.random.rand(200+1, 512+1) #using cell face data
+# data2 = np.random.rand(200, 512) #using cell center data
 
 
+# # Create coordinate data
+# # y_coords = np.linspace(0, 200, 201)  #using cell face data
+# # x_coords = np.linspace(0, 512, 513)  #using cell face data
+# y_coords = np.linspace(0, 199, 200)  #using cell center data
+# x_coords = np.linspace(0, 511, 512)  #using cell center data
 
+# # data2 = np.random.rand(200, 50) #using cell center data (STILL WORKS IF USING SUBSET)
+# # x_coords = np.linspace(0, 49, 50)  #using cell center data (STILL WORKS IF USING SUBSET
+
+# # Convert to xarray dataset
+# ds = xr.Dataset({'var': (['y', 'x'], data2)}, coords={'y': y_coords, 'x': x_coords})
+
+# # Plot setup
+# fig, ax = plt.subplots(figsize=(8, 4))
+# c = ax.imshow(ds['var'], aspect='auto', extent=[x_coords.min(), x_coords.max(), y_coords.min(), y_coords.max()])
+# # fig.colorbar(c, ax=ax)
+
+# # # Apply fix_tick_labels
+# fix_tick_labels([ax], data, tick_dim='x', data_dim='x', d_xtick=64, d_ytick=20, cell_loc='center',round=1,meters=False)  # apply fix_tick_labels on x-axis
+# fix_tick_labels([ax], data, tick_dim='y', data_dim='y', d_xtick=64, d_ytick=21,cell_loc='center',round=1,meters=False)  # apply fix_tick_labels on y-axis
 
 
 ## Converts all figures to PDF
