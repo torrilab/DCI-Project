@@ -172,8 +172,8 @@ def HorizContour(f, units, ax=None, nx=None, ny=None):
 
 #TIME 00:00:00 Function
 #Gets the realtime for the current timestep
-def get_time(t):
-    init_day,init_hour,init_min=0,0,0
+def get_time(data,t,init):
+    (init_day,init_hour,init_min)=init[0],init[1],init[2]
     times=data['time'].values/(1e9 * 60); time_inc=times.astype(int)[1]-times.astype(int)[0]
     current_min=init_hour*60+init_min+time_inc*t;
     
@@ -192,7 +192,6 @@ def get_time(t):
 
     combo=days+":"+hours+":"+mins
     return(days,hours,mins),(combo)
-
 
 # In[ ]:
 
@@ -223,18 +222,32 @@ def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
 # In[ ]:
 
 
-#CONVERT GIF TO MP4
-def convert_gif_to_mp4(input_file, output_file, fps):
-    from moviepy.editor import VideoFileClip
+# #CONVERT GIF TO MP4
+# def convert_gif_to_mp4(input_file, output_file, fps):
+#     from moviepy.editor import VideoFileClip
+#     # Load the GIF file
+#     gif_clip = VideoFileClip(input_file)
+
+#     # Set the desired framerate if provided
+#     if fps:
+#         gif_clip = gif_clip.set_fps(fps)
+
+#     # Write the GIF as an MP4 file
+#     gif_clip.write_videofile(output_file, codec="libx264")
+
+def convert_gif_to_mp4(input_file, output_file, fps,speed,bitrate='750k'):
+    from moviepy.editor import VideoFileClip, vfx
     # Load the GIF file
     gif_clip = VideoFileClip(input_file)
 
     # Set the desired framerate if provided
     if fps:
         gif_clip = gif_clip.set_fps(fps)
+    if speed != 1.0:
+        gif_clip = gif_clip.fx(vfx.speedx, speed)
 
     # Write the GIF as an MP4 file
-    gif_clip.write_videofile(output_file, codec="libx264")
+    gif_clip.write_videofile(output_file, codec="libx264",bitrate=bitrate)
 
 
 # In[ ]:
@@ -296,50 +309,91 @@ def fix_y_limits(axes):
 
 
 # In[ ]:
+import matplotlib.ticker as ticker
 
-def x_space_labels(axises,type):
-    for axis in axises: #ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
-
-        if type=='x':
-            zh = data['xh'].values
-        elif type=='y':
-            zh = data['xh'].values
-        elif type=='t':
+def fix_tick_labels(axises, data, tick_dim, data_dim, num_ticks):
+    # PLOT MUST BE IN AXIS FORM
+    # AXISES MUST BE STORED IN A LIST []
+    for axis in axises:  # ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
+        
+        if data_dim == 'x':
+            zh = data['xf']-data['xf'][0]
+        elif data_dim == 'y':
+            zh = data['yf'].values
+        elif data_dim == 'z':
+            zh = data['zf'].values
+        elif data_dim == 't':
             zh = data['time'].values.astype('timedelta64[m]').astype(int)
-    
-        ticks = axis.get_xticks()
         
-        # Convert y-tick positions to integer indices and ensure they're within bounds
-        ytick_indices = ticks.astype(int)
-        valid_mask = (ytick_indices >= 0) & (ytick_indices < len(zh))
+        # Set tick locator to control number of ticks
+        if tick_dim == 'x':
+            axis.xaxis.set_major_locator(ticker.MaxNLocator(nbins=num_ticks))
+            # axis.xaxis.set_major_locator(ticker.LinearLocator(num_ticks))
+        elif tick_dim == 'y':
+            axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=num_ticks))
+        
+        ticks = axis.get_xticks() if tick_dim == 'x' else axis.get_yticks()
+        
+        # Convert tick positions to integer indices
+        tick_indices = ticks.astype(int)
+        valid_mask = (tick_indices >= 0) & (tick_indices < len(zh))
     
         # Filter valid tick positions and corresponding labels
         filtered_ticks = ticks[valid_mask]
-        filtered_tick_labels = [f'{zh[i]:.1f}' for i in ytick_indices[valid_mask]]
+        filtered_tick_labels = [f'{zh[i]:.1f}' for i in tick_indices[valid_mask]]
     
         # Apply only valid ticks and labels
-        axis.set_xticks(filtered_ticks)
-        axis.set_xticklabels(filtered_tick_labels)
+        if tick_dim == 'x':
+            axis.set_xticks(filtered_ticks)
+            axis.set_xticklabels(filtered_tick_labels)
+        elif tick_dim == 'y':
+            axis.set_yticks(filtered_ticks)
+            axis.set_yticklabels(filtered_tick_labels)
 
 
-def y_space_labels(axises):
-    for axis in axises: #ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
-        zh = data['zh'].values
-    
-        ticks = axis.get_yticks()
-        
-        # Convert y-tick positions to integer indices and ensure they're within bounds
-        ytick_indices = ticks.astype(int)
-        valid_mask = (ytick_indices >= 0) & (ytick_indices < len(zh))
-    
-        # Filter valid tick positions and corresponding labels
-        filtered_ticks = ticks[valid_mask]
-        filtered_tick_labels = [f'{zh[i]:.1f}' for i in ytick_indices[valid_mask]]
-    
-        # Apply only valid ticks and labels
-        axis.set_yticks(filtered_ticks)
-        axis.set_yticklabels(filtered_tick_labels)
 
+
+
+## Converts all figures to PDF
+######################################################################################################################################################
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from PIL import Image
+import os
+
+def jpg_to_pdf(input_folder, output_pdf):
+    # Get a list of all JPG files in the input folder
+    jpg_files = [file for file in os.listdir(input_folder) if file.endswith('.jpg')]
+    jpg_files = ['domain_config.jpg','convergence.jpg','verticalu.jpg',
+                 'verticaltheta.jpg','verticalprspert.jpg','verticaltheta.jpg',
+                 'verticalwatervapor.jpg','horizontalw-u.jpg'] #***
+    
+    # Create a PDF canvas
+    c = canvas.Canvas(output_pdf, pagesize=letter)
+
+    # Loop through each JPG file and add it to the PDF
+    for jpg_file in jpg_files:
+        # Open the JPG image using PIL
+        img = Image.open(os.path.join(input_folder, jpg_file))
+
+        # Calculate the aspect ratio to maintain image proportions
+        width, height = img.size
+        aspect_ratio = width / height
+
+        # Add the image to the PDF
+        c.setPageSize((width, height))
+        c.drawInlineImage(os.path.join(input_folder, jpg_file), 0, 0, width=width, height=height)
+
+        # Add a new page for the next image
+        c.showPage()
+
+    # Save the PDF
+    c.save()
+
+# # Example usage:
+# input_folder = folder_path
+# output_pdf = folder_path + f'figures_062217_{res}.pdf'
+# jpg_to_pdf(input_folder, output_pdf)
 
 
 
