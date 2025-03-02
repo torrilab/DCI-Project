@@ -269,6 +269,14 @@ def apply_scientific_notation(axes, use_math_text=True, power_limits=(-1, 1)):
         formatter.set_powerlimits(power_limits)
         axis.xaxis.set_major_formatter(formatter)
 
+def apply_scientific_notation_colorbar(cbars):
+    from matplotlib.ticker import ScalarFormatter
+    formatter = ScalarFormatter(useMathText=True)
+    formatter.set_powerlimits((-2, 2))  # Adjust the range for scientific notation
+    for cbar in cbars:  # These must be Colorbar instances
+        cbar.formatter = formatter
+        cbar.update_ticks()
+
 def fix_x_limits(axes):
     #Bounds all plots by min and max of the current xlims, so all subplots match
     #Provide Axises in terms of [ax1,ax2,...]
