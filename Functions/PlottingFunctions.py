@@ -249,6 +249,10 @@ def convert_gif_to_mp4(input_file, output_file, fps,speed,bitrate='750k'):
     # Write the GIF as an MP4 file
     gif_clip.write_videofile(output_file, codec="libx264",bitrate=bitrate)
 
+# # Example usage:
+# input_filename = dir3+f'Animations/animation.gif'
+# output_filename = dir3+f'Animations/animation.mp4'
+# convert_gif_to_mp4(input_filename, output_filename, fps=None,speed=2,bitrate='750k')  # Optional fps argument
 
 # In[ ]:
 
