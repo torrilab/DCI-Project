@@ -13,7 +13,6 @@
 
 
 # In[8]:
-
 def Ddt(f,dt):
     import numpy as np
     # dt=(data['time'][1]-data['time'][0]).item()/1e9
@@ -21,7 +20,7 @@ def Ddt(f,dt):
     _ddt[1:-1] = (f[2:] - f[:-2]) / (dt)
     return _ddt
 
-def Ddz(f,dz):   
+def Ddz(f,dz):  
     import numpy as np
     _ddz=np.zeros_like(f)
     _ddz[:, 1:-1] = (f[:, 2:] - f[:, :-2]) / (2 * dz)
@@ -29,7 +28,7 @@ def Ddz(f,dz):
     _ddz[:, -1] = (f[:, -1] - f[:, -2]) / dz  # Backward difference 
     return _ddz
 
-def DdzStretch(f):
+def Ddz_4DStretch(f,data):
     import numpy as np
     #f must be interpolated to cell centers
     dz=np.diff(data['zf'].values)
@@ -41,7 +40,7 @@ def DdzStretch(f):
     ddz[:, -1] = (f[:, -1] - f[:, -2]) / dz[:, -1]  # Backward difference 
     return ddz
 
-def Ddy(f,dy):    
+def Ddy_4D(f,dy):   
     import numpy as np
     _ddy=np.zeros_like(f)
     _ddy[:, :, 1:-1] = (f[:, :, 2:] - f[:, :, :-2]) / (2 * dy)
@@ -49,7 +48,7 @@ def Ddy(f,dy):
     _ddy[:, :, -1] = (f[:, :, -1] - f[:, :, -2]) / dy  # Backward difference 
     return _ddy
 
-def Ddx(f,dx):   
+def Ddx_4d(f,dx): 
     import numpy as np
     _ddx=np.zeros_like(f)
     _ddx[:, :, :, 1:-1] = (f[:, :, :, 2:] - f[:, :, :, :-2]) / (2 * dx)
@@ -64,7 +63,7 @@ def Ddz_3D(f,dz):
     _ddz[0] = (f[1] - f[0]) / dz  # Forward difference 
     _ddz[-1] = (f[-1] - f[-2]) / dz  # Backward difference 
     return _ddz
-
+    
 def Ddy_3D(f,dy):   
     import numpy as np
     _ddy=np.zeros_like(f)
@@ -80,6 +79,19 @@ def Ddx_3D(f,dx):
     _ddx[:, :, 0] = (f[:, :, 1] - f[:, :, 0]) / dx  # Forward difference 
     _ddx[:, :, -1] = (f[:, :, -1] - f[:, :, -2]) / dx  # Backward difference 
     return _ddx
+
+def Ddz_3DStretch(f,data):
+    import numpy as np
+    #f must be interpolated to cell centers
+    dz=np.diff(data['zf'].values)
+    dz=dz.copy()[:, np.newaxis, np.newaxis]
+    
+    ddz=np.zeros_like(f)
+    ddz[1:-1] = (f[2:] - f[:-2]) / (2 * dz[1:-1])
+    ddz[0] = (f[1] - f[0]) / dz[0]  # Forward difference 
+    ddz[-1] = (f[-1] - f[-2]) / dz[-1]  # Backward difference 
+    return ddz
+
 
 
 def DivergenceHoriz(f,dx,dy):
@@ -169,6 +181,10 @@ def Laplacian3DStretch(f, dx, dy):
 # DdzStretch(f)
 # Divergence3DStretch(f,1,1)
 # Laplacian3DStretch(f,1,1)
+
+# u=data['u'].interp(xf=data['xh']).data; dx=1000
+# v=data['v'].interp(yf=data['yh']).data; dy=1000
+# conv=-(Ddx(u,dx)+Ddy(v,dy))
 
 
 # In[ ]:
