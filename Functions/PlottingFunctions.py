@@ -384,38 +384,11 @@ def fix_tick_labels(axises, data, tick_dim, data_dim, d_xtick, d_ytick, cell_loc
         elif tick_dim == 'z':
             axis.set_yticks(filtered_ticks)
             axis.set_yticklabels(filtered_tick_labels)
-# #TESTING
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import matplotlib.ticker as ticker
-# import xarray as xr
-
-# # Generate sample data
-# # data2 = np.random.rand(200+1, 512+1) #using cell face data
-# data2 = np.random.rand(200, 512) #using cell center data
-
-
-# # Create coordinate data
-# # y_coords = np.linspace(0, 200, 201)  #using cell face data
-# # x_coords = np.linspace(0, 512, 513)  #using cell face data
-# y_coords = np.linspace(0, 199, 200)  #using cell center data
-# x_coords = np.linspace(0, 511, 512)  #using cell center data
-
-# # data2 = np.random.rand(200, 50) #using cell center data (STILL WORKS IF USING SUBSET)
-# # x_coords = np.linspace(0, 49, 50)  #using cell center data (STILL WORKS IF USING SUBSET
-
-# # Convert to xarray dataset
-# ds = xr.Dataset({'var': (['y', 'x'], data2)}, coords={'y': y_coords, 'x': x_coords})
-
-# # Plot setup
-# fig, ax = plt.subplots(figsize=(8, 4))
-# c = ax.imshow(ds['var'], aspect='auto', extent=[x_coords.min(), x_coords.max(), y_coords.min(), y_coords.max()])
-# # fig.colorbar(c, ax=ax)
-
-# # # Apply fix_tick_labels
-# fix_tick_labels([ax], data, tick_dim='x', data_dim='x', d_xtick=64, d_ytick=20, cell_loc='center',round=1,meters=False)  # apply fix_tick_labels on x-axis
-# fix_tick_labels([ax], data, tick_dim='y', data_dim='y', d_xtick=64, d_ytick=21,cell_loc='center',round=1,meters=False)  # apply fix_tick_labels on y-axis
-
+#EXAMPLE RUN
+#FOR X TICKS
+# fix_tick_labels([ax], data, tick_dim='x', data_dim='x', d_xtick=32, d_ytick=20, cell_loc='center',round=1,meters=False)  # apply 
+#FOR Z TICKS
+# fix_tick_labels([axis], data, tick_dim='z', data_dim='z', d_xtick=32, d_ytick=4, cell_loc='center',round=1,meters=False)
 
 ## Converts all figures to PDF
 ######################################################################################################################################################
