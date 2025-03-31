@@ -28,16 +28,15 @@ def coefs(coefficients,degree):
 
 #Importing Model Data
 check=False
-dir='/mnt/lustre/koa/koastore/torri_group/air_directory/'
-data=xr.open_dataset(dir+'cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
-true_time=data['time']
-parcel=xr.open_dataset(dir+'cm1r20.3/run/cm1out_pdata_test5tundra-7_062217.nc') #***
-times=data['time'].values/(1e9 * 60); times=times.astype(float);
+dir='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/'
+netCDF=xr.open_dataset(dir+'../cm1r20.3/run/cm1out_test7tundra-7_062217.nc') #***
+true_time=netCDF['time']
+parcel=xr.open_dataset(dir+'../cm1r20.3/run/cm1out_pdata_test5tundra-7_062217.nc') #***
+times=netCDF['time'].values/(1e9 * 60); times=times.astype(float);
 
 #Restricts the timesteps of the data from timesteps0 to 140
-data=data.isel(time=np.arange(0,140+1))
+data=netCDF.isel(time=np.arange(0,140+1))
 parcel=parcel.isel(time=np.arange(0,140+1))
-
 
 # #uncomment if using 250m data
 # #Importing Model Data
@@ -50,118 +49,130 @@ parcel=parcel.isel(time=np.arange(0,140+1))
 # data=data.isel(time=np.arange(0,400+1))
 # parcel=parcel.isel(time=np.arange(0,400+1))
 
-
-#Job Array
-
+#job array setup
 num_jobs=30 #how many total jobs are being run? i.e. array=1-100 ==> num_jobs=100 #***
-#limited by num_parcels
-
 job_id = int(os.environ.get('SLURM_ARRAY_TASK_ID', 0)) #this is the current SBATCH job id
 if job_id==0: job_id=1
-num_parcels=len(data['time']) #total number of parcels
-job_range = num_parcels//num_jobs #number of parcels per job 
 
-# Calculate start and end based on job_id
+num_parcels=len(parcel['xh']) #total num of variables
+job_range = num_parcels//num_jobs #number of parcels per job 
 start_job = (job_id - 1) * job_range
 end_job = start_job + job_range
 if job_id==num_jobs: end_job=num_parcels-1
-print(f'running for times {start_job}-{end_job}')
 
-data=data.isel(time=slice(start_job,end_job))
-parcel=parcel.isel(time=slice(start_job,end_job))
+parcel=parcel.isel(xh=slice(start_job,end_job))
 
 
 
-#Making vertical profile of cloudy updrafts for single timestep
-def single_profile(t,var,type):
-    #thresholds
-    wthresh=0
-    qcqithresh=1e-6
 
-    nt=len(data['time'])
-    if np.mod(t,20)==0: print(f'current time is {t}/{nt}') 
-        
-    #get qc and interpolated w 
-    variable='w'; w_data=data[variable].isel(time=t) #get w data
-    w_data=w_data.interp(zf=data['zh']) #interpolation w data z coordinate from zh to zf
-    variable='qc'; qc_data=data[variable].isel(time=t) # get qc data
-    variable='qi'; qi_data=data[variable].isel(time=t) # get qc data
+# Loading Important Variables
+##############
+if 'emptylike' not in globals():
+    print('loading neccessary variables')
+    variable='w'; w_data=data[variable] #get w data
+    w_data=w_data.interp(zf=data['zh']).data #interpolation w data z coordinate from zh to zf
+    variable='qv'; qv_data=data[variable].data # get qc data
+    variable='qc'; qc_data=data[variable].data # get qc data
+    variable='qi'; qi_data=data[variable].data # get qc data
     qc_plus_qi=qc_data+qi_data
+    print('done')
+    empty_like=True
 
-    # finds regions that match the threshold
-    if type=="general":
-        cloudy_updraft=np.where((w_data>=wthresh)) #uncomment for "general updraft"
-    elif type=='cloudy': 
-        cloudy_updraft=np.where((w_data>=wthresh) & (qc_plus_qi>=qcqithresh)) #uncomment for "cloudy updraft" 
+
+
+
+#Eulerian General Cloudy Updrafts
+##############
+w_thresh1=0.1
+w_thresh2=0.5
+qcqi_thresh=1e-6
+D=np.zeros_like(w_data) 
+where1g=np.where((w_data>=w_thresh1)&(qc_plus_qi<qcqi_thresh))
+where1c=np.where((w_data>=w_thresh2)&(qc_plus_qi>=qcqi_thresh))
+where1c
+
+#Lagrangian Position Arrays
+##############
+def grid_location(x,y,z): #faster
+    #finding xf and yf
+    ybins=data['yf'].values*1000; dy=ybins[1]-ybins[0] #1000
+    xbins=data['xf'].values*1000; dx=xbins[1]-xbins[0] #1000
+    dy=np.round(dy);dx=np.round(dx)
+
+    #digitizing
+    zf=data['zf'].values*1000; which_zh=np.searchsorted(zf,z)-1; which_zh=np.where(which_zh == -1, 0, which_zh) #finds which z layer parcel in 
+    if which_zh.ndim==0:
+        which_zh=np.array([which_zh])
+    which_yh=np.floor(y/dy).astype(int)+np.where(data['yf']==0)[0]
+    which_xh=np.floor(x/dx).astype(int)+np.where(data['xf']==0)[0]
+
+    #fixing boundaries
+    which_zh[np.where(which_zh==len(data['zh']))]-=1
+    which_yh[np.where(which_yh==len(data['yh']))]-=1
+    which_xh[np.where(which_xh==len(data['xh']))]-=1
+    return which_zh,which_yh,which_xh
+x=parcel['x'].data;y=parcel['y'].data;z=parcel['z'].data
+Z,Y,X=grid_location(x,y,z)
+
+
+
+
+#Calculating Lagrangian Binary Array 
+############################
+
+A_g=np.zeros_like(Z)
+A_c=np.zeros_like(Z)
+
+# max_count= 1 #TESTING
+max_count = len(parcel['xh'])
+
+start_time = time.time()    
+for count,p in enumerate(np.arange(A_g.shape[1])):
+    #CONDITION FOR GENERAL UPDRAFT BINARY ARRAY
+    condz=Z[where1g[0],p]==where1g[1]
+    condy=Y[where1g[0],p]==where1g[2]
+    condx=X[where1g[0],p]==where1g[3]
+    where2g=np.where(condz&condy&condx)
+
+    #find (t,p) to index
+    t_inds=where1g[0][where2g]
+    p_ind=p
     
-    #creates profile storage and adds z column    
-    zhs=data['zh'].values
-    profile_array=np.zeros((len(zhs), 3)) #column 1: var, column 2: counter, column 3: list of zhs
-    profile_array[:,2]=zhs
+    #indexing T(t,p)
+    A_g[t_inds,p]=1
 
-    #runs through each position and adds to profile
-    for position in zip(*cloudy_updraft):
-        #loads data of variable of interest to plot (w,qv,qc,th)
-        if var=="w": #for w use interpolated w data
-            var_data=w_data.isel(zh=position[0],yh=position[1],xh=position[2]).values 
-        else:
-            var_data=data[var].isel(time=t,zh=position[0],yh=position[1],xh=position[2]).values
-            
-        #converts qv and qc from kg/kg=>g/kg
-        if var in ['qv','qc','qi']:
-            var_data*=1000
-            
-        #add to profile array
-        profile_array[position[0],0]+=var_data #adds data to first column
-        profile_array[position[0],1]+=1 #adds +1 counter to 2nd column
-    return profile_array
+    #CONDITION FOR CLOUDY UPDRAFT BINARY ARRAY
+    condz=Z[where1c[0],p]==where1c[1]
+    condy=Y[where1c[0],p]==where1c[2]
+    condx=X[where1c[0],p]==where1c[3]
+    where2c=np.where(condz&condy&condx)
 
-#Produce final profiles for each variable
-def final_profile(var,type):
-    t=0;profile=single_profile(t,var,type).copy() #makes profile for time 0
-    for t in np.arange(1,len(data['time'])):
-        profile[:,0:2]+=single_profile(t,var,type)[:,0:2].copy() #adds profile to previous profile (applies only to data + counter column) #******* this might be the issue
-        # if t==10: break #TESTING***
-    return profile
-
-
-#Final_Profile Function
-
-yes_run=False
-yes_run=True #uncomment if running
-
-if yes_run==True: 
-    dim='1km' 
-    # dim='250m'
+    #find (t,p) to index
+    t_inds=where1c[0][where2c]
+    p_ind=p
     
-    for type in ["general","cloudy"]:
-        print(f'currently on type {type}')
-        
-        vars=['w','qv','qc','qi','th','buoyancy']
-        # vars=['qc','th'] #TESTING***
-        for var in vars:
-            print(f'working on {var}')
-            globals()[f"profile_{var}"]=final_profile(var,type)
-        print('done')
-        
-        #Saving eulerian_profiles
-        import h5py
-        if dim=='1km':
-            if type == "general":
-                output_file = dir+f'tracking_algorithms/plots/job_out/1km_general_eulerian_profiles_{job_id}_w>=0.h5' 
-            elif type == "cloudy":
-                output_file = dir+f'tracking_algorithms/plots/job_out/1km_cloudy_eulerian_profiles_{job_id}w>=0.h5'
-        
-        if dim=='250m':
-            if type == "general":
-                output_file = dir+f'tracking_algorithms/plots/job_out/250m_general_eulerian_profiles_{job_id}w>=0.h5' 
-            elif type == "cloudy":
-                output_file = dir+f'tracking_algorithms/plots/job_out/250m_cloudy_eulerian_profiles_{job_id}w>=0.h5' 
-        
-        with h5py.File(output_file, 'w') as f:
-            f.create_dataset('profile_w', data=profile_w, compression="gzip")
-            f.create_dataset('profile_qv', data=profile_qv, compression="gzip")
-            f.create_dataset('profile_qc', data=profile_qc, compression="gzip")
-            f.create_dataset('profile_qi', data=profile_qi, compression="gzip")
-            f.create_dataset('profile_th', data=profile_th, compression="gzip")
-            f.create_dataset('profile_buoyancy', data=profile_buoyancy, compression="gzip")
+    #indexing T(t,p)
+    A_c[t_inds,p]=1
+
+    #PRINT STATEMENTS
+    if np.mod(count,1000)==0: print(f'p={p}/{A_g.shape[1]}\n')
+    if count==max_count: break #TESTING
+
+end_time = time.time()
+print(f"Time taken: {end_time - start_time:.6f} seconds")
+# secs_per_p=(end_time-start_time)/max_count #seconds per parcel
+# tot_secs=secs_per_p*len(parcel['xh']) #seconds for 1.25e5 parcels
+# tot_mins=tot_secs/60**2
+# tot_mins #19 mins calculated from 566 parcels
+
+# Saving Data
+##############
+import h5py
+with h5py.File(dir+f'lagrangian_binary_threshold_job{job_id}.h5', 'w') as f:
+    # Save the array as a variable in the file
+    f.create_dataset('A_g', data=A_g) #binary array for general updraft (w>=0.1)
+    f.create_dataset('A_c', data=A_c) #binary array for general updraft (w>=0.5 & qc+qi>=1e-6)
+    
+    f.create_dataset('Z', data=Z)
+    f.create_dataset('Y', data=Y)
+    f.create_dataset('X', data=X)
