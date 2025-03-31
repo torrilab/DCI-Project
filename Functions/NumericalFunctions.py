@@ -11,6 +11,25 @@
 # sys.path.append(path)
 # from NumericalFunctions import *
 
+#INITIALIZE DATA FUNCTION
+###############################################################
+def initiate_array(out_file,vars,t_chunk_size,p_chunk_size,t_size=None,p_size=None):
+    # Define array dimensions (adjust based on your data)
+
+    if t_size==None:
+        t_size = len(data['time'])  # Number of timesteps
+    if p_size==None:
+        p_size = len(parcel['xh'])    # Number of vertical levels
+    
+    with h5py.File(out_file, 'w') as f: 
+        # Check if the dataset 'theta_e' already exists
+        for var_name in vars:
+            if var_name not in f:
+                # Create a dataset with the full size for all time steps (initially empty)
+                f.create_dataset(var_name, 
+                                 (t_size, p_size),  # Full size for all timesteps
+                                 chunks=(t_chunk_size, p_chunk_size))  # Chunks for time axis to allow resizing
+
 
 # In[8]:
 def Ddt(f,dt):
