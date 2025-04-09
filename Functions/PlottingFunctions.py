@@ -319,9 +319,23 @@ def fix_y_limits(axes):
     for axis in axes:
         axis.set_ylim(result)
 
+def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_loc, round, meters):
+    """
+    inputs:
+    axises: [ax] or [ax1,ax2,...]
+    data: NC datafile (function needs to edited for different data variable conventions)
 
-# In[ ]:
-def fix_tick_labels(axises, data, tick_dim, data_dim, d_xtick, d_ytick, cell_loc, round, meters):
+    data_dim: which dimension is the ticks for ('x','y', or 'z')
+    tick_axis: which figure axis is the ticks for ('x','y', or 'z')
+    
+    d_xtick, d_ytick: controls the spacing between each tick (only one needs to be set at a time)
+    
+    cell_loc: is the variable stored on cell centers ('center') or cell face ('face')
+    round: how many decimal points to round to
+    meters: if (True), all ticks are multiplied by 1000 (km ==> m)
+    
+    """
+    
     # PLOT MUST BE IN AXIS FORM
     # AXISES MUST BE STORED IN A LIST []
     for axis in axises:  # ex: axises=[ax1, ax2, ax3, ax4, ax5, ax6]
@@ -346,20 +360,16 @@ def fix_tick_labels(axises, data, tick_dim, data_dim, d_xtick, d_ytick, cell_loc
             zh = data['time'].values.astype('timedelta64[m]').astype(int)
         
         # Set tick locator to control number of ticks
-        if tick_dim == 'x':
+        if tick_axis == 'x': 
             num_xticks=len(zh)/d_xtick
             # axis.xaxis.set_major_locator(ticker.MaxNLocator(nbins=num_xticks))
             axis.xaxis.set_major_locator(ticker.LinearLocator(int(num_xticks)))  # Ensures exact number of ticks
-        elif tick_dim == 'y':
-            num_yticks=len(zh)/d_ytick
-            # axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=num_yticks))
-            axis.yaxis.set_major_locator(ticker.LinearLocator(int(num_yticks)))  # Ensures exact number of ticks
-        elif tick_dim == 'z':
+        elif tick_axis == 'y':
             num_yticks=len(zh)/d_ytick
             # axis.yaxis.set_major_locator(ticker.MaxNLocator(nbins=num_yticks))
             axis.yaxis.set_major_locator(ticker.LinearLocator(int(num_yticks)))  # Ensures exact number of ticks
 
-        ticks = axis.get_xticks() if tick_dim == 'x' else axis.get_yticks()
+        ticks = axis.get_xticks() if tick_axis == 'x' else axis.get_yticks()
 
         # Convert tick positions to integer indices
 
@@ -375,20 +385,22 @@ def fix_tick_labels(axises, data, tick_dim, data_dim, d_xtick, d_ytick, cell_loc
             filtered_tick_labels = [f'{zh[i]:.{round}f}' for i in tick_indices[valid_mask]]
     
         # Apply only valid ticks and labels
-        if tick_dim == 'x':
+        if tick_axis == 'x':
             axis.set_xticks(filtered_ticks)
             axis.set_xticklabels(filtered_tick_labels)
-        elif tick_dim == 'y':
+        elif tick_axis == 'y':
             axis.set_yticks(filtered_ticks)
             axis.set_yticklabels(filtered_tick_labels)
-        elif tick_dim == 'z':
+        elif tick_axis == 'z':
             axis.set_yticks(filtered_ticks)
             axis.set_yticklabels(filtered_tick_labels)
-#EXAMPLE RUN
-#FOR X TICKS
-# fix_tick_labels([ax], data, tick_dim='x', data_dim='x', d_xtick=32, d_ytick=20, cell_loc='center',round=1,meters=False)  # apply 
-#FOR Z TICKS
-# fix_tick_labels([axis], data, tick_dim='z', data_dim='z', d_xtick=32, d_ytick=4, cell_loc='center',round=1,meters=False)
+# # # EXAMPLE RUN
+# # FOR X TICKS
+# ax = plt.gca()
+# fix_tick_labels([ax], data, data_dim='x', tick_axis='x', d_xtick=32, d_ytick=20, cell_loc='center',round=1,meters=False)  # apply 
+# # FOR Z TICKS
+# ax = plt.gca()
+# fix_tick_labels([ax], data, data_dim='z', tick_axis='y', d_xtick=10, d_ytick=2, cell_loc='center',round=2,meters=False)  # apply 
 
 ## Converts all figures to PDF
 ######################################################################################################################################################
