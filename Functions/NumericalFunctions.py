@@ -6,20 +6,34 @@
 
 # #How to Import to Code Document
 # import sys
-# dir='/mnt/lustre/koa/koastore/torri_group/air_directory/Project/'
-# path=dir+'../Functions'
+# dir2='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/'
+# path=dir2+'../Functions/'
 # sys.path.append(path)
-# from NumericalFunctions import *
+
+# import NumericalFunctions
+# from NumericalFunctions import * # import NumericalFunctions 
+# import PlottingFunctions
+# from PlottingFunctions import * # import PlottingFunctions
+
+
+# # # Get all functions in NumericalFunctions
+# # import inspect
+# # functions = [f[0] for f in inspect.getmembers(NumericalFunctions, inspect.isfunction)]
+# # functions
+
+
+# In[ ]:
+
 
 #INITIALIZE DATA FUNCTION
 ###############################################################
-def initiate_array(out_file,vars,t_chunk_size,p_chunk_size,t_size=None,p_size=None):
+def initiate_array_2D(out_file,vars,t_chunk_size,z_chunk_size,t_size=None,z_size=None):
     # Define array dimensions (adjust based on your data)
 
     if t_size==None:
         t_size = len(data['time'])  # Number of timesteps
-    if p_size==None:
-        p_size = len(parcel['xh'])    # Number of vertical levels
+    if z_size==None:
+        z_size = len(data['zh'])    # Number of vertical levels
     
     with h5py.File(out_file, 'w') as f: 
         # Check if the dataset 'theta_e' already exists
@@ -27,11 +41,36 @@ def initiate_array(out_file,vars,t_chunk_size,p_chunk_size,t_size=None,p_size=No
             if var_name not in f:
                 # Create a dataset with the full size for all time steps (initially empty)
                 f.create_dataset(var_name, 
-                                 (t_size, p_size),  # Full size for all timesteps
-                                 chunks=(t_chunk_size, p_chunk_size))  # Chunks for time axis to allow resizing
+                                 (t_size, z_size),  # Full size for all timesteps
+                                 chunks=(t_chunk_size, z_chunk_size))  # Chunks for time axis to allow resizing
+
+#INITIALIZE DATA FUNCTION
+###############################################################
+def initiate_array_4D(out_file,vars,t_chunk_size,z_chunk_size,y_chunk_size,x_chunk_size,t_size=None,z_size=None,y_size=None,x_size=None):
+    # Define array dimensions (adjust based on your data)
+
+    if t_size==None:
+        t_size = len(data['time'])  # Number of timesteps
+    if z_size==None:
+        z_size = len(data['zh'])    # Number of vertical levels
+    if y_size==None:
+        y_size = len(data['yh'])    # Number of vertical levels
+    if x_size==None:
+        x_size = len(data['xh'])    # Number of vertical levels
+    
+    with h5py.File(out_file, 'w') as f: 
+        # Check if the dataset 'theta_e' already exists
+        for var_name in vars:
+            if var_name not in f:
+                # Create a dataset with the full size for all time steps (initially empty)
+                f.create_dataset(var_name, 
+                                 (t_size, z_size, y_size, x_size),  # Full size for all timesteps
+                                 chunks=(t_chunk_size, z_chunk_size, y_chunk_size, x_chunk_size))  # Chunks for time axis to allow resizing
 
 
 # In[8]:
+
+
 def Ddt(f,dt):
     import numpy as np
     # dt=(data['time'][1]-data['time'][0]).item()/1e9
@@ -110,7 +149,6 @@ def Ddz_3DStretch(f,data):
     ddz[0] = (f[1] - f[0]) / dz[0]  # Forward difference 
     ddz[-1] = (f[-1] - f[-2]) / dz[-1]  # Backward difference 
     return ddz
-
 
 
 def DivergenceHoriz(f,dx,dy):
@@ -245,6 +283,11 @@ def Slice(type,f,ind):
 # Slice('z',f,2)
 # Slice('y',f,2)
 # Slice('x',f,2)
+
+
+# In[1]:
+
+
 def check_memory():
     import sys
     ipython_vars = ["In", "Out", "exit", "quit", "get_ipython", "ipython_vars"]
@@ -263,3 +306,6 @@ def check_memory():
     }
     print({key:f"{value} MB" for key,value in mem.items()})
     print(f"\n{round(sum(mem.values()),2)/1000} GB in use overall")
+
+check_memory()
+
