@@ -361,7 +361,9 @@ def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_lo
         
         # Set tick locator to control number of ticks
         if tick_axis == 'x': 
-            num_xticks=len(zh)/d_xtick
+            # num_xticks=len(zh)/d_xtick
+            x_min = min(zh); x_max = max(zh)
+            num_xticks = int((x_max - x_min) / 100) + 1
             # axis.xaxis.set_major_locator(ticker.MaxNLocator(nbins=num_xticks))
             axis.xaxis.set_major_locator(ticker.LinearLocator(int(num_xticks)))  # Ensures exact number of ticks
         elif tick_axis == 'y':
