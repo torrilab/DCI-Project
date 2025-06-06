@@ -405,37 +405,29 @@ def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_lo
 # fix_tick_labels([ax], data, data_dim='z', tick_axis='y', d_xtick=10, d_ytick=2, cell_loc='center',round=2,meters=False)  # apply 
 
 
-def MatchAxisLimits(axes, dim='x', buffer_frac=0.05):
-    """
-    Set consistent limits for either x or y axis based on the plotted data,
-    adding a buffer on each end (default 5%).
-    
-    Parameters:
-        axes (list): list of matplotlib Axes objects
-        dim (str): 'x' or 'y' to specify which axis limits to match
-        buffer_frac (float): fraction of data range to use as buffer on each side
-    """
+def MatchAxisLimits(axes, dim='x', buffer_frac=0.05,exclude_axlines=True):
     all_data = []
     for ax in axes:
         for line in ax.lines:
-            if dim == 'x':
-                all_data.extend(line.get_xdata())
-            elif dim == 'y':
-                all_data.extend(line.get_ydata())
-            else:
-                raise ValueError("dim must be 'x' or 'y'")
+            # Get the data for the specified dimension
+            data = line.get_xdata() if dim == 'x' else line.get_ydata()
+            
+            # Exclude lines with constant data (likely axvline or axhline)
+            if exclude_axlines==True:
+                if len(set(data)) > 2:
+                    all_data.extend(data)
 
     if all_data:
-        xmin = min(all_data)
-        xmax = max(all_data)
-        data_range = xmax - xmin
+        data_min = min(all_data)
+        data_max = max(all_data)
+        data_range = data_max - data_min
         buffer = data_range * buffer_frac
 
         for ax in axes:
             if dim == 'x':
-                ax.set_xlim(xmin - buffer, xmax + buffer)
+                ax.set_xlim(data_min - buffer, data_max + buffer)
             else:
-                ax.set_ylim(xmin - buffer, xmax + buffer)
+                ax.set_ylim(data_min - buffer, data_max + buffer)
 
 ## Converts all figures to PDF
 ######################################################################################################################################################
