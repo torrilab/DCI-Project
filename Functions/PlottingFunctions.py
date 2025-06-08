@@ -472,3 +472,85 @@ def jpg_to_pdf(input_folder, output_pdf):
 
 
 
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# === Function ===
+def UltimateContourPlot(
+    ax, PlotData, xTickLabels, yTickLabels,
+    contour_type=None,
+    num_xticks=None, round_xticks=None, xTickInterval=None,
+    num_yticks=None, round_yticks=None, yTickInterval=None,
+    add_colorbar=False, fig=None, colorbar_label=None, colorbar_label_rotation=90,
+    xlabel=None, ylabel=None, 
+    solid_contour_labels=None,solid_contour_round=None,
+    xtick_rotation=None,ytick_rotation=None,cbar_rotation=None,
+    save_path=None, save_dpi=300,
+    colorbar_kwargs=None,
+    **kwargs,
+):
+    
+    if contour_type=='line':
+        contour = ax.contour(xTickLabels, yTickLabels, PlotData, **kwargs)
+        if solid_contour_labels==True:
+            fmt_num = solid_contour_round if solid_contour_round is not None else 1
+            plt.clabel(contour, inline=True, fontsize=8, fmt=f"%.{fmt_num}f")
+    elif contour_type=='fill':
+        contour = ax.contourf(xTickLabels, yTickLabels, PlotData, **kwargs)
+    # Colorbar
+    cbar=None
+    if add_colorbar and fig is not None:
+        if colorbar_kwargs is None:
+            colorbar_kwargs = {}
+        cbar = fig.colorbar(contour, ax=ax, **colorbar_kwargs)
+        if colorbar_label:
+            cbar.set_label(colorbar_label)
+            cbar.ax.yaxis.label.set_rotation(colorbar_label_rotation)
+        if cbar_rotation is not None:
+            for tick in cbar.ax.get_yticklabels():
+                tick.set_rotation(cbar_rotation)
+
+    # X-ticks
+    if num_xticks is not None:
+        if xTickInterval is not None:
+            xticks = np.arange(0, xTickLabels.max()+1, xTickInterval)
+        else:
+            xticks = np.linspace(xTickLabels.min(), xTickLabels.max(), num_xticks)
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xticks)
+        if round_xticks is not None:
+            ax.set_xticklabels([f"{tick:.{round_xticks}f}" for tick in xticks])
+
+    # Y-ticks
+    if num_yticks is not None:
+        if yTickInterval is not None:
+            yticks = np.arange(0, yTickLabels.max()+1, yTickInterval)
+        else:
+            yticks = np.linspace(yTickLabels.min(), yTickLabels.max(), num_yticks)
+        ax.set_yticks(yticks)
+        if round_yticks is not None:
+            ax.set_yticklabels([f"{tick:.{round_yticks}f}" for tick in yticks])
+
+    # Axis labels
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
+
+    # Tick Rotation
+    if xtick_rotation is not None:
+        plt.setp(ax.get_xticklabels(), rotation=xtick_rotation)
+    if ytick_rotation is not None:
+        plt.setp(ax.get_yticklabels(), rotation=ytick_rotation)
+        
+    # Single Figure Saving
+    if save_path is not None:
+        if fig is None:
+            fig = ax.figure
+        fig.savefig(save_path, dpi=save_dpi)
+    return contour,cbar
