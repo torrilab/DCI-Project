@@ -140,7 +140,7 @@ def ProfileVariance(profile,squares_profile):
 
     #SQUARE OF MEAN
     #gets rid of rows that have no data
-    profile_mean2=profile[ (profile[:, 1] != 0)]; 
+    profile_mean2=profile[ (profile[:, 1] > 1)]; 
     #divides the data column by the counter column
     profile_mean2=np.array([profile_mean2[:, 0] / profile_mean2[:, 1], profile_mean2[:, 2]]).T 
     profile_mean2[:,0]**=2
