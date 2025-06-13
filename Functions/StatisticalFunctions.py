@@ -123,21 +123,20 @@ def ProfileMean(profile):
 # ProfileMean(profile)
 
 
-# In[173]:
+# In[184]:
 
 
-def ProfileStandardError(profile,squares_profile): 
+def ProfileVariance(profile,squares_profile): 
     #Input Requires Three Column Array 
     #with Sum in 1st Column, Count in 2nd Column, and Index in 3rd Column
     #Returns 1st and 3rd Column (removing zero rows)
 
     #MEAN OF SQUARES
     #gets rid of rows that have no data
-    profile_mean1=squares_profile[ (squares_profile[:, 1] > 1)]; 
-    N=profile_mean1[:,1]
+    profile_mean1=squares_profile[ (squares_profile[:, 1] > 1)]; N=profile_mean1[:,1]
     #divides the data column by the counter column
     profile_mean1=np.array([profile_mean1[:, 0] / profile_mean1[:, 1], profile_mean1[:, 2]]).T 
-    print(f"Mean of Squares Profile is \n{profile_mean1}") #TESTING
+    # print(f"Mean of Squares Profile is \n{profile_mean1}") #TESTING
 
     #SQUARE OF MEAN
     #gets rid of rows that have no data
@@ -145,26 +144,39 @@ def ProfileStandardError(profile,squares_profile):
     #divides the data column by the counter column
     profile_mean2=np.array([profile_mean2[:, 0] / profile_mean2[:, 1], profile_mean2[:, 2]]).T 
     profile_mean2[:,0]**=2
-    print(f"Mean Profile Squared is \n{profile_mean2}") #TESTING
+    # print(f"Mean Profile Squared is \n{profile_mean2}") #TESTING
 
     #SUBTRACTING THE TWO
     profile_mean=profile_mean1.copy()
     profile_mean[:,0]-=profile_mean2[:,0]
     # print(f"Variance Profile is \n{profile_mean}") #TESTING
+    return profile_mean,N
 
-    # DIVIDING BY (N-1)
-    # print(N-1)
-    profile_mean[:,0]/=N-1
-    # print(f"Standard Error Profile is \n{profile_mean}") #TESTING
-    return profile_mean
+def ProfileStandardDeviation(profile,squares_profile): 
+    [variance,N]=ProfileVariance(profile,squares_profile)
+    standard_deviation=variance.copy()
+    standard_deviation[:,0]**=(0.5)
+    return standard_deviation
+
+def ProfileStandardError(profile,squares_profile): 
+    [variance,N]=ProfileVariance(profile,squares_profile)
+    standard_error=variance.copy()
+    standard_error[:,0]/=(N-1)
+    standard_error[:,0]**=(0.5)
+
+    # standard_error2=variance.copy()
+    # standard_error2[:,0]*=N/(N-1)/N
+    # standard_error2[:,0]**=(0.5)
+    # print(standard_error2==standard_error)
+    return standard_error
 
 # #TESTING
-######################################################################################################
-#(0) Set up profile so we collect half of the profile value twice
-#(1) For the first row, i counted the data point 0.5 twice, so the SUM = 1 and the MEAN = 1/2 = 0.5
-#(2) And SQUARE OF MEAN = 0.5^2 = 0.25
-#(3) But SUM OF SQUARES = 0.5^2 + 0.5^2 = 0.5, and MEAN(SUM OF SQUARES) = 0.5/2 = 0.25
-#(4) ==> So when i subtract (MEAN OF SQUARES minus SQUARE OF MEANS), we get 0
+# ####################################################################################################
+# # (0) Set up profile so we collect half of the profile value twice
+# # (1) For the first row, i counted the data point 0.5 twice, so the SUM = 1 and the MEAN = 1/2 = 0.5
+# # (2) And SQUARE OF MEAN = 0.5^2 = 0.25
+# # (3) But SUM OF SQUARES = 0.5^2 + 0.5^2 = 0.5, and MEAN(SUM OF SQUARES) = 0.5/2 = 0.25
+# # (4) ==> So when i subtract (MEAN OF SQUARES minus SQUARE OF MEANS), we get 0
 
 # profile=np.zeros((10,3))
 # profile[:,0]=np.arange(1,profile.shape[0]+1)
@@ -179,8 +191,8 @@ def ProfileStandardError(profile,squares_profile):
 # profile_mean=ProfileMean(profile)
 # profile_SE=ProfileStandardError(profile,squares_profile)
 # import matplotlib.pyplot as plt
-# plt.plot(profile_mean[:,0],profile_mean[:,1])
-# plt.plot(profile_SE[:,0]*1.96,profile_SE[:,1])
-
-# plt.fill_betweenx(profile_mean[:, 1], profile_mean[:, 0] - 1.96*profile_SE[:,0], profile_mean[:, 0] + 1.96*profile_SE[:,0], color='black', alpha=0.1) #***
+# plt.plot(profile_mean[:,0],profile_mean[:,1],label='mean')
+# plt.plot(profile_SE[:,0]*1.96,profile_SE[:,1],label='SE')
+# # plt.fill_betweenx(profile_mean[:, 1], profile_mean[:, 0] - 1.96*profile_SE[:,0], profile_mean[:, 0] + 1.96*profile_SE[:,0], color='black', alpha=0.1) #***
+# plt.legend()
 
