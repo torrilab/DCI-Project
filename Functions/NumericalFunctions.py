@@ -78,13 +78,41 @@ def Ddt(f,dt):
     _ddt[1:-1] = (f[2:] - f[:-2]) / (dt)
     return _ddt
 
-def Ddz(f,dz):  
+def Ddz_1D(f,dz):  
     import numpy as np
     _ddz=np.zeros_like(f)
     _ddz[:, 1:-1] = (f[:, 2:] - f[:, :-2]) / (2 * dz)
     _ddz[:, 0] = (f[:, 1] - f[:, 0]) / dz  # Forward difference 
     _ddz[:, -1] = (f[:, -1] - f[:, -2]) / dz  # Backward difference 
     return _ddz
+
+def Ddz_1DStretch(f,data):
+    import numpy as np
+    #f must be interpolated to cell centers
+    dz=np.diff(data['zf'].values)
+    
+    ddz=np.zeros_like(f)
+    ddz[1:-1] = (f[2:] - f[:-2]) / (2 * dz[1:-1])
+    ddz[0] = (f[1] - f[0]) / dz[0]  # Forward difference 
+    ddz[-1] = (f[-1] - f[-2]) / dz[-1]  # Backward difference 
+    return ddz
+
+##################################################################
+
+def Profile_Ddz(profile):
+    import numpy as np
+    #f must be interpolated to cell centers
+    dz=np.diff(profile[:,1])
+
+    f=profile[:,0]
+    ddz=np.zeros_like(f)
+    denom=dz[1:] + dz[:-1]
+    ddz[1:-1] = (f[2:] - f[:-2]) / (2 * denom)
+    ddz[0] = (f[1] - f[0]) / dz[0]  # Forward difference 
+    ddz[-1] = (f[-1] - f[-2]) / dz[-1]  # Backward difference 
+    return np.column_stack([ddz, profile[:,1]])
+
+##################################################################
 
 def Ddz_4DStretch(f,data):
     import numpy as np
@@ -106,13 +134,15 @@ def Ddy_4D(f,dy):
     _ddy[:, :, -1] = (f[:, :, -1] - f[:, :, -2]) / dy  # Backward difference 
     return _ddy
 
-def Ddx_4d(f,dx): 
+def Ddx_4D(f,dx): 
     import numpy as np
     _ddx=np.zeros_like(f)
     _ddx[:, :, :, 1:-1] = (f[:, :, :, 2:] - f[:, :, :, :-2]) / (2 * dx)
     _ddx[:, :, :, 0] = (f[:, :, :, 1] - f[:, :, :, 0]) / dx  # Forward difference 
     _ddx[:, :, :, -1] = (f[:, :, :, -1] - f[:, :, :, -2]) / dx  # Backward difference 
     return _ddx
+
+##############################
 
 def Ddz_3D(f,dz): 
     import numpy as np
@@ -121,7 +151,19 @@ def Ddz_3D(f,dz):
     _ddz[0] = (f[1] - f[0]) / dz  # Forward difference 
     _ddz[-1] = (f[-1] - f[-2]) / dz  # Backward difference 
     return _ddz
+
+def Ddz_3DStretch(f,data):
+    import numpy as np
+    #f must be interpolated to cell centers
+    dz=np.diff(data['zf'].values)
+    dz=dz.copy()[:, np.newaxis, np.newaxis]
     
+    ddz=np.zeros_like(f)
+    ddz[1:-1] = (f[2:] - f[:-2]) / (2 * dz[1:-1])
+    ddz[0] = (f[1] - f[0]) / dz[0]  # Forward difference 
+    ddz[-1] = (f[-1] - f[-2]) / dz[-1]  # Backward difference 
+    return ddz
+
 def Ddy_3D(f,dy):   
     import numpy as np
     _ddy=np.zeros_like(f)
@@ -138,17 +180,6 @@ def Ddx_3D(f,dx):
     _ddx[:, :, -1] = (f[:, :, -1] - f[:, :, -2]) / dx  # Backward difference 
     return _ddx
 
-def Ddz_3DStretch(f,data):
-    import numpy as np
-    #f must be interpolated to cell centers
-    dz=np.diff(data['zf'].values)
-    dz=dz.copy()[:, np.newaxis, np.newaxis]
-    
-    ddz=np.zeros_like(f)
-    ddz[1:-1] = (f[2:] - f[:-2]) / (2 * dz[1:-1])
-    ddz[0] = (f[1] - f[0]) / dz[0]  # Forward difference 
-    ddz[-1] = (f[-1] - f[-2]) / dz[-1]  # Backward difference 
-    return ddz
 
 
 def DivergenceHoriz(f,dx,dy):
@@ -327,5 +358,10 @@ def check_memory(namespace):
     }
     print({key: f"{value} MB" for key, value in mem.items()})
     print(f"\n{round(sum(mem.values()), 2)/1000} GB in use overall")
+
+
+# In[ ]:
+
+
 
 
