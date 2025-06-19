@@ -110,7 +110,7 @@ def ProfileMean(profile):
     #Returns 1st and 3rd Column (removing zero rows)
     
     #gets rid of rows that have no data
-    profile_mean=profile[ (profile[:, 1] != 0)]; 
+    profile_mean=profile[ (profile[:, 1] > 1)]; 
     #divides the data column by the counter column
     profile_mean=np.array([profile_mean[:, 0] / profile_mean[:, 1], profile_mean[:, 2]]).T 
     return profile_mean
