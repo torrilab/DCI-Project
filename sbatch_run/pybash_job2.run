@@ -1,17 +1,18 @@
 #!/bin/bash
 #SBATCH --job-name=python
-#SBATCH --array=1-30:4
-#SBATCH --account=torri
-#SBATCH --partition=torri
+#SBATCH --array=1-60
+##SBATCH --account=torri
+##SBATCH --partition=torri
 
-##SBATCH --partition=shared
+#SBATCH --partition=shared
 
 #SBATCH --time=3-00:00:00
 ##SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH  --tasks-per-node=1  
 #SBATCH --cpus-per-task=1 #Each node has 47 CPUs
-#SBATCH --mem=6000 #GBTotal 180GB per node (180G/30 = 6G)
+##SBATCH --mem=12000 #GBTotal 180GB per node (180G/30 = 6G) #0 for full node memory
+#SBATCH --mem=0
 ##SBATCH --constraint=“ib_hdr” # will allow a mix of HDR200 and HDR100 nodes
 ##SBATCH --constraint=“ib_hdr100” # explicitly only allow HDR100 nodes
 ##SBATCH --distribution=“*:*:*” # Set the distribution to defaults if doing sbatch from interactive session
@@ -23,6 +24,9 @@
 
 mkdir -p job_out
 exec >> "job_out/py-$SLURM_ARRAY_TASK_ID.out" 2>&1
+
+# Disable HDF5 file locking
+export HDF5_USE_FILE_LOCKING=FALSE
 
 module purge
 module load lang/Anaconda3
