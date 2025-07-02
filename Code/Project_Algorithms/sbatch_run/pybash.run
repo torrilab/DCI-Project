@@ -21,10 +21,18 @@
 #SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT_80
 #SBATCH --mail-user=air673@hawaii.edu
 
+#LOADING MODULES
 module purge
 module load lang/Anaconda3
+source activate work #personal python custom environment
+
+#PYTHON SETTINGS
+export HDF5_USE_FILE_LOCKING=FALSE #disable HDF5 file locking
 export PYTHONUNBUFFERED=TRUE #allows print statements during run
-python -u pybash.py
+
+#RUNNING PYTHON
+python -u pybash.py $SLURM_ARRAY_TASK_ID
+
 
 # Configure the Intel MPI parameters
 ##export I_MPI_FABRICS=shm:ofi
