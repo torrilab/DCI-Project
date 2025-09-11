@@ -264,13 +264,39 @@ def convert_gif_to_mp4(input_file, output_file, fps,speed,bitrate='750k'):
 
 
 #USEFUL VERTICAL PROFILE PLOTTING FUNCTIONS
-def apply_scientific_notation(axes, use_math_text=True, power_limits=(-1, 1)):
-    #Provide Axises in terms of [ax1,ax2,...]
-    from matplotlib.ticker import ScalarFormatter
+# def apply_scientific_notation(axes, use_math_text=True, power_limits=(-1, 1)): #OLD VERSION
+#     #Provide Axises in terms of [ax1,ax2,...]
+#     from matplotlib.ticker import ScalarFormatter
+#     for axis in axes:
+#         formatter = ScalarFormatter(useMathText=use_math_text)
+#         formatter.set_scientific(True)
+#         formatter.set_powerlimits(power_limits)
+#         axis.xaxis.set_major_formatter(formatter)
+
+from matplotlib.ticker import ScalarFormatter
+class RoundedScalarFormatter(ScalarFormatter):
+    def __init__(self, decimals=2, useMathText=True, powerlimits=(-1, 1), scientific=True):
+        super().__init__(useMathText=useMathText)
+        self.decimals = decimals
+        self.set_scientific(scientific)
+        self.set_powerlimits(powerlimits)
+        self.set_useOffset(False)
+
+    def _set_format(self):
+        self.format = f"%.{self.decimals}f"
+
+
+def apply_scientific_notation(axes, use_math_text=True, power_limits=(-1, 1), decimals=2, scientific=True):
+    """
+    Apply scientific notation with mantissas rounded to a fixed number of decimals.
+    """
     for axis in axes:
-        formatter = ScalarFormatter(useMathText=use_math_text)
-        formatter.set_scientific(True)
-        formatter.set_powerlimits(power_limits)
+        formatter = RoundedScalarFormatter(
+            decimals=decimals,
+            useMathText=use_math_text,
+            powerlimits=power_limits,
+            scientific=scientific
+        )
         axis.xaxis.set_major_formatter(formatter)
 
 def apply_scientific_notation_colorbar(cbars):
@@ -319,6 +345,62 @@ def fix_y_limits(axes):
     for axis in axes:
         axis.set_ylim(result)
 
+#Makes ticks flush to figure boundaries 
+#(recommended to just use SnapLimitsToTicks below)
+def FixedTicks(axs, dim='x', buffer_frac=0.05, nticks=6):
+    import numpy as np
+    from matplotlib.ticker import LinearLocator
+
+    # def round_sig(x, sig=3):
+    #     return float(f"{x:.{sig}g}")
+
+    for ax in axs:
+        if dim == 'x':
+            data_min, data_max = ax.dataLim.intervalx
+        elif dim == 'y':
+            data_min, data_max = ax.dataLim.intervaly
+
+        print(data_min,data_max)
+            
+        data_range = data_max - data_min
+        buffer = data_range * buffer_frac
+        # a = round_sig(data_min - buffer, 2)
+        # b = round_sig(data_max + buffer, 2)
+        a = data_min - buffer
+        b = data_max + buffer
+
+        if dim == 'x':
+            ax.set_xlim(a, b)
+            ax.xaxis.set_major_locator(LinearLocator(nticks))
+
+        elif dim == 'y':
+            ax.set_ylim(a, b)
+            ax.yaxis.set_major_locator(LinearLocator(nticks))
+
+#Makes ticks flush to figure boundaries (recommended)
+def SnapLimitsToTicks(axes, dim="x"):
+    """
+    Snap axis limits to the first and last existing tick values.
+    Works for a list of axes.
+    (Note: currently incompatible with tight_layout do to "tick auto-rescaling" ==> use fig.subplots_adjust instead)
+    """
+    for ax in axes:
+        lo, hi = ax.dataLim.intervalx if dim == "x" else ax.dataLim.intervaly
+        
+        if dim == "x":
+            ticks = ax.get_xticks()
+            lo_tick = np.where(lo>=ticks)[0][-1]
+            hi_tick = np.where(hi<=ticks)[0][0]
+
+            # ax.set_xlim(ticks[0], ticks[-1])
+            ax.set_xlim(ticks[lo_tick], ticks[hi_tick])
+        elif dim == "y":
+            ticks = ax.get_yticks()    
+            lo_tick = np.where(lo>=ticks)[0][-1]
+            hi_tick = np.where(hi<=ticks)[0][0]
+            # ax.set_ylim(ticks[0], ticks[-1])
+            ax.set_ylim(ticks[lo_tick], ticks[hi_tick])
+            
 def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_loc, round, meters):
     """
     inputs:
@@ -404,30 +486,101 @@ def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_lo
 # ax = plt.gca()
 # fix_tick_labels([ax], data, data_dim='z', tick_axis='y', d_xtick=10, d_ytick=2, cell_loc='center',round=2,meters=False)  # apply 
 
+# def MatchAxisLimits(axes, dim='x', buffer_frac=0.05, exclude_axlines=True, limit_y=False, use_collections=True):
+#     #OLDER VERSION, NOT AS GOOD AS VERSION BELOW
+#     all_data = []
+#     for ax in axes:
+#         ymin, ymax = ax.get_ylim() if limit_y else (None, None)
 
-def MatchAxisLimits(axes, dim='x', buffer_frac=0.05,exclude_axlines=True):
-    all_data = []
+#         # === Lines (normal plots, axvline, etc.)
+#         for line in ax.lines:
+#             xdata = line.get_xdata()
+#             ydata = line.get_ydata()
+#             data = xdata if dim == 'x' else ydata
+
+#             if exclude_axlines and len(set(data)) <= 2:
+#                 continue
+
+#             if limit_y and dim == 'x':
+#                 mask = (ydata >= ymin) & (ydata <= ymax)
+#                 data = data[mask]
+
+#             if len(data) > 0:
+#                 all_data.extend(data)
+
+#         if use_collections == True:
+#             # === Collections (error bars, fill_between areas)
+#             for coll in ax.collections:
+#                 verts = getattr(coll, 'get_paths', lambda: [])()
+#                 for path in verts:
+#                     coords = path.vertices
+#                     arr = coords[:, 0] if dim == 'x' else coords[:, 1]
+    
+#                     if limit_y and dim == 'x':
+#                         mask = (coords[:, 1] >= ymin) & (coords[:, 1] <= ymax)
+#                         arr = arr[mask]
+    
+#                     if len(arr) > 0:
+#                         all_data.extend(arr)
+
+#     # === Apply limits
+#     if all_data:
+#         data_min, data_max = min(all_data), max(all_data)
+#         data_range = data_max - data_min
+#         buffer = data_range * buffer_frac if data_range > 0 else 0
+
+#         for ax in axes:
+#             if dim == 'x':
+#                 ax.set_xlim(data_min - buffer, data_max + buffer)
+#             else:
+#                 ax.set_ylim(data_min - buffer, data_max + buffer)
+                
+def MatchAxisLimits(axes, dim='x'):
+    """
+    Find the axis whose tick bounds span all others,
+    then copy its ticks and limits to every axis in the list.
+    """
+    lo_vals, hi_vals = [], []
+
+    # Collect bounds
     for ax in axes:
-        for line in ax.lines:
-            # Get the data for the specified dimension
-            data = line.get_xdata() if dim == 'x' else line.get_ydata()
-            
-            # Exclude lines with constant data (likely axvline or axhline)
-            if exclude_axlines==True:
-                if len(set(data)) > 2:
-                    all_data.extend(data)
+        ticks = ax.get_xticks() if dim == 'x' else ax.get_yticks()
+        if len(ticks) > 1:
+            lo_vals.append(ticks[0])
+            hi_vals.append(ticks[-1])
 
-    if all_data:
-        data_min = min(all_data)
-        data_max = max(all_data)
-        data_range = data_max - data_min
-        buffer = data_range * buffer_frac
+    if not lo_vals or not hi_vals:
+        return None
 
-        for ax in axes:
-            if dim == 'x':
-                ax.set_xlim(data_min - buffer, data_max + buffer)
-            else:
-                ax.set_ylim(data_min - buffer, data_max + buffer)
+    lo, hi = min(lo_vals), max(hi_vals)
+
+    # Find reference axis
+    ref_ax = next(
+        (ax for ax in axes
+         if len((ticks := (ax.get_xticks() if dim == 'x' else ax.get_yticks()))) > 1
+         and ticks[0] == lo and ticks[-1] == hi),
+        None
+    )
+    if ref_ax is None:
+        return None  # no reference axis found
+
+    # Extract ticks and limits from reference
+    ref_ticks = ref_ax.get_xticks() if dim == 'x' else ref_ax.get_yticks()
+    ref_lim   = ref_ax.get_xlim() if dim == 'x' else ref_ax.get_ylim()
+
+    # Apply to all axes
+    for ax in axes:
+        if dim == 'x':
+            ax.set_xlim(ref_lim)
+            ax.set_xticks(ref_ticks)
+        else:
+            ax.set_ylim(ref_lim)
+            ax.set_yticks(ref_ticks)
+
+    return ref_ax
+
+
+
 
 ## Converts all figures to PDF
 ######################################################################################################################################################
