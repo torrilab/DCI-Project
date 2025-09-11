@@ -320,8 +320,6 @@ def apply_scientific_notation_colorbar(cbars):
 #Makes ticks flush to figure boundaries (recommended)
 def SnapLimitsToTicks(axes, dim="x"):
     from matplotlib.ticker import AutoLocator
-    import numpy as np
-    
     """
     Snap axis limits to the nearest ticks that enclose the visible data.
     Ignores helper lines (axhline, axvline, etc.) by ignoring lines with <= 2 points (better to run helper lines afterwards). 
@@ -338,6 +336,13 @@ def SnapLimitsToTicks(axes, dim="x"):
                     continue
                 mask = (ydata >= ymin) & (ydata <= ymax)
                 xs.extend(xdata[mask])
+            # --- include fill_betweenx (PolyCollection) data ---
+            for coll in ax.collections:
+                for path in coll.get_paths():
+                    coords = path.vertices
+                    ymask = (coords[:, 1] >= ymin) & (coords[:, 1] <= ymax)
+                    xs.extend(coords[:, 0][ymask])
+
             lo, hi = (min(xs), max(xs)) if xs else ax.dataLim.intervalx
      
             locator = AutoLocator()
@@ -357,6 +362,12 @@ def SnapLimitsToTicks(axes, dim="x"):
                     continue
                 mask = (xdata >= xmin) & (xdata <= xmax)
                 ys.extend(ydata[mask])
+            # --- include fill_betweenx (PolyCollection) data ---  
+            for coll in ax.collections:
+                for path in coll.get_paths():
+                    coords = path.vertices
+                    xmask = (coords[:, 0] >= xmin) & (coords[:, 0] <= xmax)
+                    ys.extend(coords[:, 1][xmask])
             lo, hi = (min(ys), max(ys)) if ys else ax.dataLim.intervaly
 
             locator = AutoLocator()
@@ -365,7 +376,6 @@ def SnapLimitsToTicks(axes, dim="x"):
             lo_tick = ticks[ticks <= lo][-1]
             hi_tick = ticks[ticks >= hi][0]
             ax.set_ylim(lo_tick, hi_tick)
-
 
 # In[3]:
 
