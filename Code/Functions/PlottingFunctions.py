@@ -1,7 +1,28 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[4]:
+
+
+# #Import PlottingFunctions 
+# import sys
+# dir2='/mnt/lustre/koa/koastore/torri_group/air_directory/DCI-Project/'
+# path=dir2+'../Functions/'
+# sys.path.append(path)
+
+# import NumericalFunctions
+# from NumericalFunctions import * # import NumericalFunctions 
+# import PlottingFunctions
+# from PlottingFunctions import * # import PlottingFunctions
+
+
+# # # Get all functions in NumericalFunctions
+# # import inspect
+# # functions = [f[0] for f in inspect.getmembers(NumericalFunctions, inspect.isfunction)]
+# # functions
+
+
+# In[1]:
 
 
 #Importing Packages
@@ -193,6 +214,7 @@ def get_time(data,t,init):
     combo=days+":"+hours+":"+mins
     return(days,hours,mins),(combo)
 
+
 # In[ ]:
 
 
@@ -222,19 +244,6 @@ def create_animation(start_t, end_t, output_file, vmin_max_values, fps=2):
 # In[ ]:
 
 
-# #CONVERT GIF TO MP4
-# def convert_gif_to_mp4(input_file, output_file, fps):
-#     from moviepy.editor import VideoFileClip
-#     # Load the GIF file
-#     gif_clip = VideoFileClip(input_file)
-
-#     # Set the desired framerate if provided
-#     if fps:
-#         gif_clip = gif_clip.set_fps(fps)
-
-#     # Write the GIF as an MP4 file
-#     gif_clip.write_videofile(output_file, codec="libx264")
-
 def convert_gif_to_mp4(input_file, output_file, fps,speed,bitrate='750k'):
     from moviepy.editor import VideoFileClip, vfx
     # Load the GIF file
@@ -253,6 +262,7 @@ def convert_gif_to_mp4(input_file, output_file, fps,speed,bitrate='750k'):
 # input_filename = dir3+f'Animations/animation.gif'
 # output_filename = dir3+f'Animations/animation.mp4'
 # convert_gif_to_mp4(input_filename, output_filename, fps=None,speed=2,bitrate='750k')  # Optional fps argument
+
 
 # In[ ]:
 
@@ -307,100 +317,59 @@ def apply_scientific_notation_colorbar(cbars):
         cbar.formatter = formatter
         cbar.update_ticks()
 
-def fix_x_limits(axes):
-    #Bounds all plots by min and max of the current xlims, so all subplots match
-    #Provide Axises in terms of [ax1,ax2,...]
-    
-    # Collect x-limits from all axes
-    xlims = [axis.get_xlim() for axis in axes]
-    mins = [xlim[0] for xlim in xlims]
-    maxes = [xlim[1] for xlim in xlims]
-    
-    # Find the total min and max
-    total_min = min(mins)
-    total_max = max(maxes)
-    result = (total_min, total_max)
-    print(result)
-    
-    # Set the same x-limits for all axes
-    for axis in axes:
-        axis.set_xlim(result)
-
-def fix_y_limits(axes):
-    #Bounds all plots by min and max of the current ylims, so all subplots match
-    #Provide Axises in terms of [ax1,ax2,...]
-    
-    # Collect x-limits from all axes
-    xlims = [axis.get_ylim() for axis in axes]
-    mins = [xlim[0] for xlim in xlims]
-    maxes = [xlim[1] for xlim in xlims]
-    
-    # Find the total min and max
-    total_min = min(mins)
-    total_max = max(maxes)
-    result = (total_min, total_max)
-    print(result)
-    
-    # Set the same x-limits for all axes
-    for axis in axes:
-        axis.set_ylim(result)
-
-#Makes ticks flush to figure boundaries 
-#(recommended to just use SnapLimitsToTicks below)
-def FixedTicks(axs, dim='x', buffer_frac=0.05, nticks=6):
-    import numpy as np
-    from matplotlib.ticker import LinearLocator
-
-    # def round_sig(x, sig=3):
-    #     return float(f"{x:.{sig}g}")
-
-    for ax in axs:
-        if dim == 'x':
-            data_min, data_max = ax.dataLim.intervalx
-        elif dim == 'y':
-            data_min, data_max = ax.dataLim.intervaly
-
-        print(data_min,data_max)
-            
-        data_range = data_max - data_min
-        buffer = data_range * buffer_frac
-        # a = round_sig(data_min - buffer, 2)
-        # b = round_sig(data_max + buffer, 2)
-        a = data_min - buffer
-        b = data_max + buffer
-
-        if dim == 'x':
-            ax.set_xlim(a, b)
-            ax.xaxis.set_major_locator(LinearLocator(nticks))
-
-        elif dim == 'y':
-            ax.set_ylim(a, b)
-            ax.yaxis.set_major_locator(LinearLocator(nticks))
-
 #Makes ticks flush to figure boundaries (recommended)
 def SnapLimitsToTicks(axes, dim="x"):
+    from matplotlib.ticker import AutoLocator
+    import numpy as np
+    
     """
-    Snap axis limits to the first and last existing tick values.
-    Works for a list of axes.
-    (Note: currently incompatible with tight_layout do to "tick auto-rescaling" ==> use fig.subplots_adjust instead)
+    Snap axis limits to the nearest ticks that enclose the visible data.
+    Ignores helper lines (axhline, axvline, etc.) by ignoring lines with <= 2 points (better to run helper lines afterwards). 
     """
     for ax in axes:
-        lo, hi = ax.dataLim.intervalx if dim == "x" else ax.dataLim.intervaly
-        
         if dim == "x":
-            ticks = ax.get_xticks()
-            lo_tick = np.where(lo>=ticks)[0][-1]
-            hi_tick = np.where(hi<=ticks)[0][0]
+            ymin, ymax = ax.get_ylim()
+            xs = []
+            for line in ax.get_lines():
+                xdata = np.asarray(line.get_xdata())
+                ydata = np.asarray(line.get_ydata())
+                # Skip constant or very short lines (axvline, etc.)
+                if len(np.unique(xdata)) <= 2 or len(np.unique(ydata)) <= 2:
+                    continue
+                mask = (ydata >= ymin) & (ydata <= ymax)
+                xs.extend(xdata[mask])
+            lo, hi = (min(xs), max(xs)) if xs else ax.dataLim.intervalx
+     
+            locator = AutoLocator()
+            ticks = locator.tick_values(lo, hi)
 
-            # ax.set_xlim(ticks[0], ticks[-1])
-            ax.set_xlim(ticks[lo_tick], ticks[hi_tick])
-        elif dim == "y":
-            ticks = ax.get_yticks()    
-            lo_tick = np.where(lo>=ticks)[0][-1]
-            hi_tick = np.where(hi<=ticks)[0][0]
-            # ax.set_ylim(ticks[0], ticks[-1])
-            ax.set_ylim(ticks[lo_tick], ticks[hi_tick])
-            
+            lo_tick = ticks[ticks <= lo][-1]
+            hi_tick = ticks[ticks >= hi][0]
+            ax.set_xlim(lo_tick, hi_tick)
+
+        else:  # y case
+            xmin, xmax = ax.get_xlim()
+            ys = []
+            for line in ax.get_lines():
+                xdata = np.asarray(line.get_xdata())
+                ydata = np.asarray(line.get_ydata())
+                if len(np.unique(xdata)) <= 2 or len(np.unique(ydata)) <= 2:
+                    continue
+                mask = (xdata >= xmin) & (xdata <= xmax)
+                ys.extend(ydata[mask])
+            lo, hi = (min(ys), max(ys)) if ys else ax.dataLim.intervaly
+
+            locator = AutoLocator()
+            ticks = locator.tick_values(lo, hi)
+
+            lo_tick = ticks[ticks <= lo][-1]
+            hi_tick = ticks[ticks >= hi][0]
+            ax.set_ylim(lo_tick, hi_tick)
+
+
+# In[3]:
+
+
 def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_loc, round, meters):
     """
     inputs:
@@ -485,6 +454,49 @@ def fix_tick_labels(axises, data, data_dim, tick_axis, d_xtick, d_ytick, cell_lo
 # # FOR Z TICKS
 # ax = plt.gca()
 # fix_tick_labels([ax], data, data_dim='z', tick_axis='y', d_xtick=10, d_ytick=2, cell_loc='center',round=2,meters=False)  # apply 
+
+
+# In[1]:
+
+
+def fix_x_limits(axes):
+    #Bounds all plots by min and max of the current xlims, so all subplots match
+    #Provide Axises in terms of [ax1,ax2,...]
+    
+    # Collect x-limits from all axes
+    xlims = [axis.get_xlim() for axis in axes]
+    mins = [xlim[0] for xlim in xlims]
+    maxes = [xlim[1] for xlim in xlims]
+    
+    # Find the total min and max
+    total_min = min(mins)
+    total_max = max(maxes)
+    result = (total_min, total_max)
+    print(result)
+    
+    # Set the same x-limits for all axes
+    for axis in axes:
+        axis.set_xlim(result)
+
+def fix_y_limits(axes):
+    #Bounds all plots by min and max of the current ylims, so all subplots match
+    #Provide Axises in terms of [ax1,ax2,...]
+    
+    # Collect x-limits from all axes
+    xlims = [axis.get_ylim() for axis in axes]
+    mins = [xlim[0] for xlim in xlims]
+    maxes = [xlim[1] for xlim in xlims]
+    
+    # Find the total min and max
+    total_min = min(mins)
+    total_max = max(maxes)
+    result = (total_min, total_max)
+    print(result)
+    
+    # Set the same x-limits for all axes
+    for axis in axes:
+        axis.set_ylim(result)
+
 
 # def MatchAxisLimits(axes, dim='x', buffer_frac=0.05, exclude_axlines=True, limit_y=False, use_collections=True):
 #     #OLDER VERSION, NOT AS GOOD AS VERSION BELOW
@@ -580,6 +592,7 @@ def MatchAxisLimits(axes, dim='x'):
     return ref_ax
 
 
+# In[3]:
 
 
 ## Converts all figures to PDF
@@ -624,12 +637,83 @@ def jpg_to_pdf(input_folder, output_pdf):
 # jpg_to_pdf(input_folder, output_pdf)
 
 
+# In[3]:
 
 
+def DocString():
+    """
+    Create a contour or filled contour plot with extensive customization options.
 
-import numpy as np
-import matplotlib.pyplot as plt
+    Parameters:
+    -----------
+    ax : matplotlib.axes.Axes
+        The matplotlib Axes object where the contour plot will be drawn.
 
+    PlotData : 2D array-like
+        The 2D data array to contour.
+
+    xTickLabels : 1D array-like
+        The x coordinates corresponding to the columns of PlotData.
+
+    yTickLabels : 1D array-like
+        The y coordinates corresponding to the rows of PlotData.
+
+    contour_type : str, optional
+        Specify the type of contour plot:
+        - 'line' for contour lines (ax.contour),
+        - 'fill' for filled contours (ax.contourf).
+        Default is None (no plot).
+
+    num_xticks : int, optional
+        Number of x-axis ticks to display. If None, default matplotlib ticks are used.
+
+    round_xticks : int, optional
+        Number of decimal places to round x-axis tick labels to.
+
+    num_yticks : int, optional
+        Number of y-axis ticks to display. If None, default matplotlib ticks are used.
+
+    round_yticks : int, optional
+        Number of decimal places to round y-axis tick labels to.
+
+    add_colorbar : bool, optional
+        Whether to add a colorbar to the plot.
+
+    fig : matplotlib.figure.Figure, optional
+        The figure object needed to add the colorbar.
+
+    colorbar_label : str, optional
+        Label string for the colorbar.
+
+    xlabel : str, optional
+        Label for the x-axis.
+
+    ylabel : str, optional
+        Label for the y-axis.
+
+    solid_contour_labels : bool, optional
+        If True and contour_type is 'line', adds contour line labels.
+
+    solid_contour_round : int, optional
+        Number of decimal places to round contour labels to.
+
+    xtick_rotation : float or int, optional
+        Rotation angle in degrees for x-axis tick labels.
+
+    ytick_rotation : float or int, optional
+        Rotation angle in degrees for y-axis tick labels.
+
+    cbar_rotation : float or int, optional
+        Rotation angle in degrees for colorbar tick labels.
+
+    **kwargs :
+        Additional keyword arguments passed directly to matplotlib's contour or contourf function.
+
+    Returns:
+    --------
+    contour : QuadContourSet
+        The matplotlib contour set object created by contour or contourf.
+    """
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -707,3 +791,4 @@ def UltimateContourPlot(
             fig = ax.figure
         fig.savefig(save_path, dpi=save_dpi)
     return contour,cbar
+
