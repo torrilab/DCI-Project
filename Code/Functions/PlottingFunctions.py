@@ -496,56 +496,6 @@ def fix_y_limits(axes):
     # Set the same x-limits for all axes
     for axis in axes:
         axis.set_ylim(result)
-
-
-# def MatchAxisLimits(axes, dim='x', buffer_frac=0.05, exclude_axlines=True, limit_y=False, use_collections=True):
-#     #OLDER VERSION, NOT AS GOOD AS VERSION BELOW
-#     all_data = []
-#     for ax in axes:
-#         ymin, ymax = ax.get_ylim() if limit_y else (None, None)
-
-#         # === Lines (normal plots, axvline, etc.)
-#         for line in ax.lines:
-#             xdata = line.get_xdata()
-#             ydata = line.get_ydata()
-#             data = xdata if dim == 'x' else ydata
-
-#             if exclude_axlines and len(set(data)) <= 2:
-#                 continue
-
-#             if limit_y and dim == 'x':
-#                 mask = (ydata >= ymin) & (ydata <= ymax)
-#                 data = data[mask]
-
-#             if len(data) > 0:
-#                 all_data.extend(data)
-
-#         if use_collections == True:
-#             # === Collections (error bars, fill_between areas)
-#             for coll in ax.collections:
-#                 verts = getattr(coll, 'get_paths', lambda: [])()
-#                 for path in verts:
-#                     coords = path.vertices
-#                     arr = coords[:, 0] if dim == 'x' else coords[:, 1]
-    
-#                     if limit_y and dim == 'x':
-#                         mask = (coords[:, 1] >= ymin) & (coords[:, 1] <= ymax)
-#                         arr = arr[mask]
-    
-#                     if len(arr) > 0:
-#                         all_data.extend(arr)
-
-#     # === Apply limits
-#     if all_data:
-#         data_min, data_max = min(all_data), max(all_data)
-#         data_range = data_max - data_min
-#         buffer = data_range * buffer_frac if data_range > 0 else 0
-
-#         for ax in axes:
-#             if dim == 'x':
-#                 ax.set_xlim(data_min - buffer, data_max + buffer)
-#             else:
-#                 ax.set_ylim(data_min - buffer, data_max + buffer)
                 
 def MatchAxisLimits(axes, dim='x'):
     """
