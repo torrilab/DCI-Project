@@ -1,0 +1,78 @@
+#!/bin/bash
+#SBATCH --job-name=python
+#SBATCH --array=1-100 #%+number after to limit number of of runs at a time
+##SBATCH --account=torri
+##SBATCH --partition=torri
+
+#SBATCH --partition=shared
+
+#SBATCH --time=0-03:00:00
+##SBATCH --ntasks=1
+#SBATCH --nodes=1 
+#SBATCH  --tasks-per-node=1  
+#SBATCH --cpus-per-task=1 #Each node has 47 CPUs
+#SBATCH --mem=10G #GBTotal 180GB per node (180G/30 = 6G) #0 for full node memory
+##SBATCH --constraint=“ib_hdr” # will allow a mix of HDR200 and HDR100 nodes
+##SBATCH --constraint=“ib_hdr100” # explicitly only allow HDR100 nodes
+##SBATCH --distribution=“*:*:*” # Set the distribution to defaults if doing sbatch from interactive session
+#SBATCH --error=pybash_job-%A.err
+#SBATCH --output=pybash_job-%A.out
+## Remote notification
+#SBATCH --mail-type=BEGIN,END,FAIL,REQUEUE,TIME_LIMIT_80
+#SBATCH --mail-user=supercomputerjobs@gmail.com
+
+mkdir -p job_out
+#exec >> "job_out/py-$SLURM_ARRAY_TASK_ID.out" 2>&1 #don't use if you are piping to .out file below
+
+#LOADING MODULES
+module purge
+module load lang/Anaconda3
+source activate work #personal python custom environment
+
+#PYTHON SETTINGS
+export HDF5_USE_FILE_LOCKING=FALSE #disable HDF5 file locking
+export PYTHONUNBUFFERED=TRUE #allows print statements during run
+
+# --- RUNNING PYTHON ---
+
+# ONE
+mkdir -p job_out/Eulerian_Binary_Array
+jupyter nbconvert --to script Eulerian_Binary_Array.ipynb
+python -u Eulerian_Binary_Array.py $SLURM_ARRAY_TASK_ID \
+    > job_out/Eulerian_Binary_Array/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+# TWO
+mkdir -p job_out/Eulerian_VMF
+jupyter nbconvert --to script Eulerian_VMF.ipynb
+python -u Eulerian_VMF.py $SLURM_ARRAY_TASK_ID \
+    > job_out/Eulerian_VMF/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+# THREE
+mkdir -p job_out/Equivalent_Potential_Temperature
+jupyter nbconvert --to script Equivalent_Potential_Temperature.ipynb
+python -u Equivalent_Potential_Temperature.py $SLURM_ARRAY_TASK_ID \
+    > job_out/Equivalent_Potential_Temperature/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+# FOUR
+mkdir -p job_out/Density_Potential_Temperature
+jupyter nbconvert --to script Density_Potential_Temperature.ipynb
+python -u Density_Potential_Temperature.py $SLURM_ARRAY_TASK_ID \
+    > job_out/Density_Potential_Temperature/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+# FIVE
+mkdir -p job_out/Moist_Static_Energy
+jupyter nbconvert --to script Moist_Static_Energy.ipynb
+python -u Moist_Static_Energy.py $SLURM_ARRAY_TASK_ID \
+    > job_out/Moist_Static_Energy/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+# SIX
+mkdir -p job_out/Convergence
+jupyter nbconvert --to script Convergence.ipynb
+python -u Convergence.py $SLURM_ARRAY_TASK_ID \
+    > job_out/Convergence/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+# SEVEN
+mkdir -p job_out/MoistureConvergence
+jupyter nbconvert --to script MoistureConvergence.ipynb
+python -u MoistureConvergence.py $SLURM_ARRAY_TASK_ID \
+    > job_out/MoistureConvergence/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
