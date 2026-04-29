@@ -51,6 +51,14 @@ def CallVariable(ModelData, DataManager, timeString, variableName, zInterpolate 
             dataName = "MoistureConvergence"
             dataFolder = dataName
 
+        elif variableName in ['qv_prime','qcqi_prime','RH_vapor_prime',
+                              'winterp_prime','VMF_g_prime','VMF_c_prime',
+                              'HMC_prime',
+                              'theta_v_prime','theta_e_prime','MSE_prime']:
+            dataType = "CalculateMoreVariables"
+            dataName = "VariablePerturbations"
+            dataFolder = dataName
+
         elif variableName in [f'{Processed_string}Entrainment{DivideMassFlux_string}_g',f'{Processed_string}Entrainment{DivideMassFlux_string}_c',
                               f'{Processed_string}TransferEntrainment{DivideMassFlux_string}_g',
                               f'{Processed_string}TransferEntrainment{DivideMassFlux_string}_c']:
@@ -80,7 +88,7 @@ def CallVariable(ModelData, DataManager, timeString, variableName, zInterpolate 
     return var_data
 
 
-# In[4]:
+# In[3]:
 
 
 # ============================================================
@@ -118,6 +126,13 @@ def CallLagrangianArray(ModelData, DataManager, timeString, variableName,
     elif variableName in ["HMC"]:
         dataType = "LagrangianArrays"
         dataName = "MoistureConvergence"
+        dataFolder = dataName
+    elif variableName in ["QV_prime","QCQI_prime","RH_vapor_prime",
+                           "W_prime","VMF_g_prime",'VMF_c_prime',
+                           "HMC_prime",
+                           "THETA_v_prime",'THETA_e_prime','MSE_prime']:
+        dataType = "LagrangianArrays"
+        dataName = "VARS_Perturbations"       
         dataFolder = dataName
     elif variableName in ['D_c', 'D_g', 'E_c', 'E_g',
                           'TransferD_c', 'TransferD_g', 
