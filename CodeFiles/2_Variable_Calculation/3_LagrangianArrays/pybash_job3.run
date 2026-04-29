@@ -12,7 +12,7 @@
 #SBATCH --nodes=1 
 #SBATCH  --tasks-per-node=1  
 #SBATCH --cpus-per-task=1 #Each node has 47 CPUs
-#SBATCH --mem=10G #GBTotal 180GB per node (180G/30 = 6G) #0 for full node memory
+#SBATCH --mem=20G #GBTotal 180GB per node (180G/30 = 6G) #0 for full node memory
 ##SBATCH --constraint=“ib_hdr” # will allow a mix of HDR200 and HDR100 nodes
 ##SBATCH --constraint=“ib_hdr100” # explicitly only allow HDR100 nodes
 ##SBATCH --distribution=“*:*:*” # Set the distribution to defaults if doing sbatch from interactive session
@@ -37,7 +37,14 @@ export PYTHONUNBUFFERED=TRUE #allows print statements during run
 # --- RUNNING PYTHON ---
 
 # ONE
-mkdir -p job_out/CalculateVariablePerturbations
-#jupyter nbconvert --to script CalculateVariablePerturbations.ipynb
-python -u CalculateVariablePerturbations.py $SLURM_ARRAY_TASK_ID \
-    > job_out/CalculateVariablePerturbations/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+mkdir -p job_out/VARS_Perturbations_Lagrangian_Array
+#jupyter nbconvert --to script VARS_Perturbations_Lagrangian_Array.ipynb
+python -u VARS_Perturbations_Lagrangian_Array.py $SLURM_ARRAY_TASK_ID \
+    > job_out/VARS_Perturbations_Lagrangian_Array/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+
+
+
+
+
+
+

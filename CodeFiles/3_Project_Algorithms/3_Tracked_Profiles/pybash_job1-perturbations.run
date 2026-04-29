@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=python
 ##SBATCH --array=1-20 #%+number after to limit number of of runs at a time
-#SBATCH --array=1-100 #%+number after to limit number of of runs at a time
+#SBATCH --array=10-100 #%+number after to limit number of of runs at a time
 #SBATCH --account=torri
 #SBATCH --partition=torri
 
 ##SBATCH --partition=shared
 
-#SBATCH --time=0-03:00:00
+#SBATCH --time=0-04:00:00
 ##SBATCH --ntasks=1
 #SBATCH --nodes=1 
 #SBATCH  --tasks-per-node=1  
@@ -37,7 +37,7 @@ export PYTHONUNBUFFERED=TRUE #allows print statements during run
 # --- RUNNING PYTHON ---
 
 # ONE
-mkdir -p job_out/CalculateVariablePerturbations
-#jupyter nbconvert --to script CalculateVariablePerturbations.ipynb
-python -u CalculateVariablePerturbations.py $SLURM_ARRAY_TASK_ID \
-    > job_out/CalculateVariablePerturbations/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
+mkdir -p job_out/Variables_Perturbations
+#jupyter nbconvert --to script Tracked_Profiles.ipynb #don't use
+python -u Tracked_Profiles.py Variables_Perturbations $SLURM_ARRAY_TASK_ID \
+    > job_out/Variables_Perturbations/py-${SLURM_ARRAY_TASK_ID}.out 2>&1
