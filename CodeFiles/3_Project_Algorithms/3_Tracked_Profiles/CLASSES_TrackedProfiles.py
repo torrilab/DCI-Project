@@ -272,7 +272,7 @@ class TrackedProfiles_Plotting_CLASS:
         )
 
     @staticmethod
-    def AddDepthLegend(axis, depths=["ALL", "SHALLOW", "DEEP"]):
+    def AddDepthLegend(axis, depths=["ALL", "SHALLOW", "DEEP"], loc='upper right'):
         """
         Adds a legend to a specific axis for cloud depth categories (color-coded).
         """
@@ -289,7 +289,7 @@ class TrackedProfiles_Plotting_CLASS:
     
         axis.legend(
             handles=legend_lines,
-            loc='upper right',
+            loc=loc,
             title='Cloud Types',
             title_fontsize=10,
             fontsize=9,
